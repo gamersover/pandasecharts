@@ -1,8 +1,8 @@
 import warnings
 import numpy as np
-from pyecharts.charts import *
+from pyecharts.charts import Page, Timeline
+from pyecharts.charts import Line, Bar, Bar3D, Pie, Scatter
 from pyecharts import options as opts
-from pyecharts.commons.utils import JsCode
 
 # TODO: 需支持可定制，类似pd.xxxxsize=100等可以设置全局属性，
 # 数组的唯一值超过该数字，则认为变量为连续性？也许可以参考catboost怎么区分连续和离散变量
@@ -56,7 +56,7 @@ def by_decorator(by=None):
                 for by_value, by_df in kwargs["df"].groupby(by):
                     new_kwargs = dict(kwargs)
                     new_kwargs["df"] = by_df
-                    new_kwargs["subtitle"] = f"{new_kwargs['subtitle']}{by}={by_value}", 
+                    new_kwargs["subtitle"] += f"{by}={by_value}",
                     chart_ = func(**new_kwargs)
                     page.add(chart_)
                 return page
@@ -84,7 +84,14 @@ def timeline_decorator(timeline=None, timeline_opts={}):
     return wrapper
 
 
-def get_pie(df, x, y, title, subtitle, label_show, agg_func, legend_opts):
+def get_pie(df,
+            x,
+            y,
+            title,
+            subtitle,
+            label_show,
+            agg_func,
+            legend_opts):
     # TODO: 是否需要像legend_opts，对每个opts使用额外的dict自定义接口，使得用户可以自定义
     if agg_func is not None:
         df = df.groupby(x)[y].agg(agg_func).reset_index()
@@ -92,7 +99,11 @@ def get_pie(df, x, y, title, subtitle, label_show, agg_func, legend_opts):
         Pie()
         .add(str(y), df[[x, y]].values.tolist())
         .set_series_opts(
-            label_opts=opts.LabelOpts(formatter="{b}:{d}%", position="inner", is_show=label_show))
+            label_opts=opts.LabelOpts(
+                formatter="{b}:{d}%",
+                position="inner",
+                is_show=label_show)
+        )
         .set_global_opts(
             title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
             legend_opts=opts.LegendOpts(**legend_opts),
@@ -101,7 +112,17 @@ def get_pie(df, x, y, title, subtitle, label_show, agg_func, legend_opts):
     return pie
 
 
-def get_bar(df, x, ys, xaxis_name, yaxis_name, title, subtitle, agg_func, stack_view, reverse_axis, label_show):
+def get_bar(df,
+            x,
+            ys,
+            xaxis_name,
+            yaxis_name,
+            title,
+            subtitle,
+            agg_func,
+            stack_view,
+            reverse_axis,
+            label_show):
     if stack_view:
         stack = ["1"]*len(ys)
     else:
@@ -153,7 +174,17 @@ def get_bar3d(df, x, y, z, title, subtitle):
     return bar3d
 
 
-def get_line(df, x, ys, xtype, xaxis_name, yaxis_name, title, subtitle, agg_func, smooth, label_show):
+def get_line(df,
+             x,
+             ys,
+             xtype,
+             xaxis_name,
+             yaxis_name,
+             title,
+             subtitle,
+             agg_func,
+             smooth,
+             label_show):
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
@@ -165,7 +196,7 @@ def get_line(df, x, ys, xtype, xaxis_name, yaxis_name, title, subtitle, agg_func
 
     for y in ys:
         line.add_yaxis(str(y), df[y].values.tolist(),
-                        is_smooth=smooth)
+                       is_smooth=smooth)
 
     line.set_series_opts(
         label_opts=opts.LabelOpts(is_show=label_show)
@@ -177,7 +208,7 @@ def get_line(df, x, ys, xtype, xaxis_name, yaxis_name, title, subtitle, agg_func
         else:
             xtype = "value"
         warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
-    
+
     line.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),
         yaxis_opts=opts.AxisOpts(name=yaxis_name, type_="value"),
@@ -186,7 +217,16 @@ def get_line(df, x, ys, xtype, xaxis_name, yaxis_name, title, subtitle, agg_func
     return line
 
 
-def get_scatter(df, x, ys, xtype, xaxis_name, yaxis_name, title, subtitle, agg_func, label_show):
+def get_scatter(df,
+                x,
+                ys,
+                xtype,
+                xaxis_name,
+                yaxis_name,
+                title,
+                subtitle,
+                agg_func,
+                label_show):
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
@@ -207,7 +247,8 @@ def get_scatter(df, x, ys, xtype, xaxis_name, yaxis_name, title, subtitle, agg_f
             xtype = "category"
         else:
             xtype = "value"
-        warnings.warn(f"Please specify argument xtype, \'{xtype}\' is infered!")
+        warnings.warn(
+            f"Please specify argument xtype, \'{xtype}\' is infered!")
 
     scatter.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),
