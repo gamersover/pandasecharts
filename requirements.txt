@@ -1,0 +1,2 @@
+pandas
+pyecharts>=1.0.0
