@@ -1,7 +1,11 @@
 import pandas as pd
-from .chart_tool import get_pie, get_bar, get_bar3d, get_line, get_scatter
+from .chart_tool import get_pie, get_bar, get_line, get_scatter
+from .chart_tool import get_bar3d, get_line3d, get_scatter3d
+from .chart_tool import get_boxplot, get_funnel, get_geo, get_map
 from .chart_tool import timeline_decorator, by_decorator
 
+
+# TODO: 支持设置Theme，TimeLine支持add_shema自定义样式（和timeline_opts的区别？）
 
 @pd.api.extensions.register_dataframe_accessor("echart")
 class DataFrameEcharts:
@@ -53,7 +57,7 @@ class DataFrameEcharts:
         df[x] = df[x].astype(str)
 
         if xaxis_name is None:
-            xaxis_name = x
+            xaxis_name = str(x)
 
         if not isinstance(ys, list):
             ys = [ys]
@@ -78,13 +82,24 @@ class DataFrameEcharts:
               x="",
               y="",
               z="",
+              xaxis_name=None,
+              yaxis_name=None,
+              zaxis_name=None,
               by=None,
               title="",
               subtitle="",
+              visualmap=False,
+              visualmap_opts={},
               timeline=None,
               timeline_opts={}):
         df = self._obj.copy()
-        df[x] = df[x].astype(str)
+
+        if xaxis_name is None:
+            xaxis_name = str(x)
+        if yaxis_name is None:
+            yaxis_name = str(y)
+        if zaxis_name is None:
+            zaxis_name = str(z)
 
         td = timeline_decorator(timeline, timeline_opts)
         bd = by_decorator(by=by)
@@ -93,8 +108,13 @@ class DataFrameEcharts:
             x=x,
             y=y,
             z=z,
+            xaxis_name=xaxis_name,
+            yaxis_name=yaxis_name,
+            zaxis_name=zaxis_name,
             title=title,
             subtitle=subtitle,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts
         )
 
     def line(self,
@@ -136,6 +156,51 @@ class DataFrameEcharts:
             label_show=label_show,
         )
 
+    def line3d(self,
+               x="",
+               y="",
+               z="",
+               xtype=None,
+               ytype=None,
+               ztype=None,
+               xaxis_name=None,
+               yaxis_name=None,
+               zaxis_name=None,
+               title="",
+               subtitle="",
+               visualmap=False,
+               visualmap_opts={},
+               by=None,
+               timeline=None,
+               timeline_opts={}):
+        # FIXME: bar3d 和 line3d 等 不支持 timeline ？
+        df = self._obj.copy()
+        if xaxis_name is None:
+            xaxis_name = str(x)
+        if yaxis_name is None:
+            yaxis_name = str(y)
+        if zaxis_name is None:
+            zaxis_name = str(z)
+
+        td = timeline_decorator(timeline, timeline_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_line3d))(
+            df=df,
+            x=x,
+            y=y,
+            z=z,
+            xtype=xtype,
+            ytype=ytype,
+            ztype=ztype,
+            xaxis_name=xaxis_name,
+            yaxis_name=yaxis_name,
+            zaxis_name=zaxis_name,
+            title=title,
+            subtitle=subtitle,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts
+        )
+
     def scatter(self,
                 x="",
                 ys="",
@@ -146,6 +211,8 @@ class DataFrameEcharts:
                 subtitle="",
                 agg_func=None,
                 label_show=False,
+                visualmap=False,
+                visualmap_opts={},
                 by=None,
                 timeline=None,
                 timeline_opts={}):
@@ -171,6 +238,162 @@ class DataFrameEcharts:
             subtitle=subtitle,
             agg_func=agg_func,
             label_show=label_show,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts
+        )
+
+    def scatter3d(self,
+                  x="",
+                  y="",
+                  z="",
+                  xtype=None,
+                  ytype=None,
+                  ztype=None,
+                  xaxis_name=None,
+                  yaxis_name=None,
+                  zaxis_name=None,
+                  title="",
+                  subtitle="",
+                  visualmap=False,
+                  visualmap_opts={},
+                  by=None,
+                  timeline=None,
+                  timeline_opts={}):
+        df = self._obj.copy()
+        if xaxis_name is None:
+            xaxis_name = str(x)
+        if yaxis_name is None:
+            yaxis_name = str(y)
+        if zaxis_name is None:
+            zaxis_name = str(z)
+
+        td = timeline_decorator(timeline, timeline_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_scatter3d))(
+            df=df,
+            x=x,
+            y=y,
+            z=z,
+            xtype=xtype,
+            ytype=ytype,
+            ztype=ztype,
+            xaxis_name=xaxis_name,
+            yaxis_name=yaxis_name,
+            zaxis_name=zaxis_name,
+            title=title,
+            subtitle=subtitle,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts
+        )
+
+    def boxplot(self,
+                ys="",
+                xaxis_name="",
+                yaxis_name="",
+                title="",
+                subtitle="",
+                by=None,
+                timeline=None,
+                timeline_opts={}):
+        df = self._obj.copy()
+
+        if not isinstance(ys, list):
+            ys = [ys]
+
+        td = timeline_decorator(timeline, timeline_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_boxplot))(
+            df=df,
+            ys=ys,
+            xaxis_name=xaxis_name,
+            yaxis_name=yaxis_name,
+            title=title,
+            subtitle=subtitle,
+        )
+
+    def funnel(self,
+               x="",
+               y="",
+               title="",
+               subtitle="",
+               ascending=False,
+               position="inner",
+               by=None,
+               timeline=None,
+               timeline_opts={}):
+        df = self._obj.copy()
+        td = timeline_decorator(timeline, timeline_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_funnel))(
+            df=df,
+            x=x,
+            y=y,
+            title=title,
+            subtitle=subtitle,
+            ascending=ascending,
+            position=position
+        )
+
+    def geo(self,
+            x="",
+            ys="",
+            maptype="",
+            title="",
+            subtitle="",
+            agg_func=None,
+            label_show=False,
+            visualmap=False,
+            visualmap_opts={},
+            by=None,
+            timeline=None,
+            timeline_opts={}):
+        df = self._obj.copy()
+        if not isinstance(ys, list):
+            ys = [ys]
+
+        td = timeline_decorator(timeline, timeline_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_geo))(
+            df=df,
+            x=x,
+            ys=ys,
+            maptype=maptype,
+            title=title,
+            subtitle=subtitle,
+            agg_func=agg_func,
+            label_show=label_show,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts
+        )
+
+    def map(self,
+            x="",
+            y="",
+            maptype="",
+            title="",
+            subtitle="",
+            agg_func=None,
+            label_show=False,
+            visualmap=False,
+            visualmap_opts={},
+            by=None,
+            timeline=None,
+            timeline_opts={}):
+        df = self._obj.copy()
+
+        td = timeline_decorator(timeline, timeline_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_map))(
+            df=df,
+            x=x,
+            y=y,
+            maptype=maptype,
+            title=title,
+            subtitle=subtitle,
+            agg_func=agg_func,
+            label_show=label_show,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts
         )
 
 
