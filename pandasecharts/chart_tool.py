@@ -95,7 +95,6 @@ def get_pie(df,
             label_show,
             agg_func,
             legend_opts):
-    # TODO: 是否需要像legend_opts，对每个opts使用额外的dict自定义接口，使得用户可以自定义
     if agg_func is not None:
         df = df.groupby(x)[y].agg(agg_func).reset_index()
     pie = (
@@ -125,7 +124,8 @@ def get_bar(df,
             agg_func,
             stack_view,
             reverse_axis,
-            label_show):
+            label_show,
+            legend_opts):
     if stack_view:
         stack = ["1"]*len(ys)
     else:
@@ -151,7 +151,8 @@ def get_bar(df,
     bar.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name, type_='category'),
         yaxis_opts=opts.AxisOpts(name=yaxis_name, type_='value'),
-        title_opts=opts.TitleOpts(title=title, subtitle=subtitle)
+        title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
+        legend_opts=opts.LegendOpts(**legend_opts),
     )
     if reverse_axis:
         bar.reversal_axis()
@@ -202,7 +203,8 @@ def get_line(df,
              subtitle,
              agg_func,
              smooth,
-             label_show):
+             label_show,
+             legend_opts):
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
@@ -230,7 +232,8 @@ def get_line(df,
     line.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),
         yaxis_opts=opts.AxisOpts(name=yaxis_name, type_="value"),
-        title_opts=opts.TitleOpts(title=title, subtitle=subtitle)
+        title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
+        legend_opts=opts.LegendOpts(**legend_opts),
     )
     return line
 
@@ -300,6 +303,7 @@ def get_scatter(df,
                 subtitle,
                 agg_func,
                 label_show,
+                legend_opts,
                 visualmap,
                 visualmap_opts):
     if agg_func is not None:
@@ -330,12 +334,14 @@ def get_scatter(df,
             xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),
             yaxis_opts=opts.AxisOpts(name=yaxis_name, type_="value"),
             title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
+            legend_opts=opts.LegendOpts(**legend_opts),
             visualmap_opts=opts.VisualMapOpts(**visualmap_opts)
         )
     else:
         scatter.set_global_opts(
             xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),
             yaxis_opts=opts.AxisOpts(name=yaxis_name, type_="value"),
+            legend_opts=opts.LegendOpts(**legend_opts),
             title_opts=opts.TitleOpts(title=title, subtitle=subtitle)
         )
     return scatter
@@ -401,7 +407,8 @@ def get_boxplot(df,
                 xaxis_name,
                 yaxis_name,
                 title,
-                subtitle):
+                subtitle,
+                legend_opts):
     boxplot = Boxplot()
     if all(isinstance(y, str) for y in ys):
         boxplot.add_xaxis(["expr"])
@@ -418,7 +425,8 @@ def get_boxplot(df,
     boxplot.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name),
         yaxis_opts=opts.AxisOpts(name=yaxis_name),
-        title_opts=opts.TitleOpts(title=title, subtitle=subtitle)
+        title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
+        legend_opts=opts.LegendOpts(**legend_opts)
     )
     return boxplot
 
@@ -429,7 +437,8 @@ def get_funnel(df,
                title,
                subtitle,
                ascending,
-               position):
+               position,
+               legend_opts):
     funnel = (
         Funnel()
         .add(str(y),
@@ -437,7 +446,8 @@ def get_funnel(df,
              sort_="ascending" if ascending else "desending",
              label_opts=opts.LabelOpts(position=position))
         .set_global_opts(
-            title_opts=opts.TitleOpts(title=title, subtitle=subtitle)
+            title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
+            legend_opts=opts.LegendOpts(**legend_opts)
         )
     )
     return funnel
@@ -462,6 +472,7 @@ def get_geo(df,
     geo = Geo()
     geo.add_schema(maptype=maptype)
     for y in ys:
+        # TODO: add 支持 type_
         geo.add(str(y), df[[x, y]].values.tolist())
 
     geo.set_series_opts(label_opts=opts.LabelOpts(is_show=label_show))

@@ -19,8 +19,8 @@ class DataFrameEcharts:
             subtitle="",
             agg_func=None,
             label_show=False,
-            by=None,
             legend_opts={},
+            by=None,
             timeline=None,
             timeline_opts={}):
         df = self._obj.copy()
@@ -50,6 +50,7 @@ class DataFrameEcharts:
             stack_view=False,
             label_show=False,
             reverse_axis=False,
+            legend_opts={},
             by=None,
             timeline=None,
             timeline_opts={}):
@@ -76,6 +77,7 @@ class DataFrameEcharts:
             stack_view=stack_view,
             reverse_axis=reverse_axis,
             label_show=label_show,
+            legend_opts=legend_opts
         )
 
     def bar3d(self,
@@ -85,13 +87,11 @@ class DataFrameEcharts:
               xaxis_name=None,
               yaxis_name=None,
               zaxis_name=None,
-              by=None,
               title="",
               subtitle="",
               visualmap=False,
               visualmap_opts={},
-              timeline=None,
-              timeline_opts={}):
+              by=None):
         df = self._obj.copy()
 
         if xaxis_name is None:
@@ -101,9 +101,8 @@ class DataFrameEcharts:
         if zaxis_name is None:
             zaxis_name = str(z)
 
-        td = timeline_decorator(timeline, timeline_opts)
         bd = by_decorator(by=by)
-        return td(bd(get_bar3d))(
+        return bd(get_bar3d)(
             df=df,
             x=x,
             y=y,
@@ -128,6 +127,7 @@ class DataFrameEcharts:
              agg_func=None,
              smooth=False,
              label_show=False,
+             legend_opts={},
              by=None,
              timeline=None,
              timeline_opts={}):
@@ -154,6 +154,7 @@ class DataFrameEcharts:
             agg_func=agg_func,
             smooth=smooth,
             label_show=label_show,
+            legend_opts=legend_opts
         )
 
     def line3d(self,
@@ -170,10 +171,7 @@ class DataFrameEcharts:
                subtitle="",
                visualmap=False,
                visualmap_opts={},
-               by=None,
-               timeline=None,
-               timeline_opts={}):
-        # FIXME: bar3d 和 line3d 等 不支持 timeline ？
+               by=None):
         df = self._obj.copy()
         if xaxis_name is None:
             xaxis_name = str(x)
@@ -182,9 +180,8 @@ class DataFrameEcharts:
         if zaxis_name is None:
             zaxis_name = str(z)
 
-        td = timeline_decorator(timeline, timeline_opts)
         bd = by_decorator(by=by)
-        return td(bd(get_line3d))(
+        return bd(get_line3d)(
             df=df,
             x=x,
             y=y,
@@ -211,6 +208,7 @@ class DataFrameEcharts:
                 subtitle="",
                 agg_func=None,
                 label_show=False,
+                legend_opts={},
                 visualmap=False,
                 visualmap_opts={},
                 by=None,
@@ -238,6 +236,7 @@ class DataFrameEcharts:
             subtitle=subtitle,
             agg_func=agg_func,
             label_show=label_show,
+            legend_opts=legend_opts,
             visualmap=visualmap,
             visualmap_opts=visualmap_opts
         )
@@ -256,9 +255,7 @@ class DataFrameEcharts:
                   subtitle="",
                   visualmap=False,
                   visualmap_opts={},
-                  by=None,
-                  timeline=None,
-                  timeline_opts={}):
+                  by=None):
         df = self._obj.copy()
         if xaxis_name is None:
             xaxis_name = str(x)
@@ -267,9 +264,8 @@ class DataFrameEcharts:
         if zaxis_name is None:
             zaxis_name = str(z)
 
-        td = timeline_decorator(timeline, timeline_opts)
         bd = by_decorator(by=by)
-        return td(bd(get_scatter3d))(
+        return bd(get_scatter3d)(
             df=df,
             x=x,
             y=y,
@@ -292,6 +288,7 @@ class DataFrameEcharts:
                 yaxis_name="",
                 title="",
                 subtitle="",
+                legend_opts={},
                 by=None,
                 timeline=None,
                 timeline_opts={}):
@@ -309,6 +306,7 @@ class DataFrameEcharts:
             yaxis_name=yaxis_name,
             title=title,
             subtitle=subtitle,
+            legend_opts=legend_opts,
         )
 
     def funnel(self,
@@ -318,6 +316,7 @@ class DataFrameEcharts:
                subtitle="",
                ascending=False,
                position="inner",
+               legend_opts={},
                by=None,
                timeline=None,
                timeline_opts={}):
@@ -331,7 +330,8 @@ class DataFrameEcharts:
             title=title,
             subtitle=subtitle,
             ascending=ascending,
-            position=position
+            position=position,
+            legend_opts=legend_opts
         )
 
     def geo(self,
