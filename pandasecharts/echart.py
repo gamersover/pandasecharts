@@ -5,8 +5,6 @@ from .chart_tool import get_boxplot, get_funnel, get_geo, get_map
 from .chart_tool import timeline_decorator, by_decorator
 
 
-# TODO: 支持设置Theme，TimeLine支持add_shema自定义样式（和timeline_opts的区别？）
-
 @pd.api.extensions.register_dataframe_accessor("echart")
 class DataFrameEcharts:
     def __init__(self, pandas_obj):
@@ -20,13 +18,14 @@ class DataFrameEcharts:
             agg_func=None,
             label_show=False,
             legend_opts={},
+            theme=None,
             by=None,
             timeline=None,
             timeline_opts={}):
         df = self._obj.copy()
         df[x] = df[x].astype(str)
 
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_pie))(
             df=df,
@@ -36,7 +35,8 @@ class DataFrameEcharts:
             subtitle=subtitle,
             label_show=label_show,
             agg_func=agg_func,
-            legend_opts=legend_opts
+            legend_opts=legend_opts,
+            theme=theme,
         )
 
     def bar(self,
@@ -51,6 +51,7 @@ class DataFrameEcharts:
             label_show=False,
             reverse_axis=False,
             legend_opts={},
+            theme=None,
             by=None,
             timeline=None,
             timeline_opts={}):
@@ -63,7 +64,7 @@ class DataFrameEcharts:
         if not isinstance(ys, list):
             ys = [ys]
 
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_bar))(
             df=df,
@@ -77,7 +78,8 @@ class DataFrameEcharts:
             stack_view=stack_view,
             reverse_axis=reverse_axis,
             label_show=label_show,
-            legend_opts=legend_opts
+            legend_opts=legend_opts,
+            theme=theme
         )
 
     def bar3d(self,
@@ -91,6 +93,7 @@ class DataFrameEcharts:
               subtitle="",
               visualmap=False,
               visualmap_opts={},
+              theme=None,
               by=None):
         df = self._obj.copy()
 
@@ -113,7 +116,8 @@ class DataFrameEcharts:
             title=title,
             subtitle=subtitle,
             visualmap=visualmap,
-            visualmap_opts=visualmap_opts
+            visualmap_opts=visualmap_opts,
+            theme=theme
         )
 
     def line(self,
@@ -128,6 +132,7 @@ class DataFrameEcharts:
              smooth=False,
              label_show=False,
              legend_opts={},
+             theme=None,
              by=None,
              timeline=None,
              timeline_opts={}):
@@ -140,7 +145,7 @@ class DataFrameEcharts:
         if not isinstance(ys, list):
             ys = [ys]
 
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_line))(
             df=df,
@@ -154,7 +159,8 @@ class DataFrameEcharts:
             agg_func=agg_func,
             smooth=smooth,
             label_show=label_show,
-            legend_opts=legend_opts
+            legend_opts=legend_opts,
+            theme=theme
         )
 
     def line3d(self,
@@ -171,6 +177,7 @@ class DataFrameEcharts:
                subtitle="",
                visualmap=False,
                visualmap_opts={},
+               theme=None,
                by=None):
         df = self._obj.copy()
         if xaxis_name is None:
@@ -195,7 +202,8 @@ class DataFrameEcharts:
             title=title,
             subtitle=subtitle,
             visualmap=visualmap,
-            visualmap_opts=visualmap_opts
+            visualmap_opts=visualmap_opts,
+            theme=theme
         )
 
     def scatter(self,
@@ -211,6 +219,7 @@ class DataFrameEcharts:
                 legend_opts={},
                 visualmap=False,
                 visualmap_opts={},
+                theme=None,
                 by=None,
                 timeline=None,
                 timeline_opts={}):
@@ -223,7 +232,7 @@ class DataFrameEcharts:
         if not isinstance(ys, list):
             ys = [ys]
 
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_scatter))(
             df=df,
@@ -238,7 +247,8 @@ class DataFrameEcharts:
             label_show=label_show,
             legend_opts=legend_opts,
             visualmap=visualmap,
-            visualmap_opts=visualmap_opts
+            visualmap_opts=visualmap_opts,
+            theme=theme
         )
 
     def scatter3d(self,
@@ -255,6 +265,7 @@ class DataFrameEcharts:
                   subtitle="",
                   visualmap=False,
                   visualmap_opts={},
+                  theme=None,
                   by=None):
         df = self._obj.copy()
         if xaxis_name is None:
@@ -279,7 +290,8 @@ class DataFrameEcharts:
             title=title,
             subtitle=subtitle,
             visualmap=visualmap,
-            visualmap_opts=visualmap_opts
+            visualmap_opts=visualmap_opts,
+            theme=theme
         )
 
     def boxplot(self,
@@ -289,6 +301,7 @@ class DataFrameEcharts:
                 title="",
                 subtitle="",
                 legend_opts={},
+                theme=None,
                 by=None,
                 timeline=None,
                 timeline_opts={}):
@@ -297,7 +310,7 @@ class DataFrameEcharts:
         if not isinstance(ys, list):
             ys = [ys]
 
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_boxplot))(
             df=df,
@@ -307,6 +320,7 @@ class DataFrameEcharts:
             title=title,
             subtitle=subtitle,
             legend_opts=legend_opts,
+            theme=theme
         )
 
     def funnel(self,
@@ -317,11 +331,12 @@ class DataFrameEcharts:
                ascending=False,
                position="inner",
                legend_opts={},
+               theme=None,
                by=None,
                timeline=None,
                timeline_opts={}):
         df = self._obj.copy()
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_funnel))(
             df=df,
@@ -331,7 +346,8 @@ class DataFrameEcharts:
             subtitle=subtitle,
             ascending=ascending,
             position=position,
-            legend_opts=legend_opts
+            legend_opts=legend_opts,
+            theme=theme
         )
 
     def geo(self,
@@ -344,6 +360,7 @@ class DataFrameEcharts:
             label_show=False,
             visualmap=False,
             visualmap_opts={},
+            theme=None,
             by=None,
             timeline=None,
             timeline_opts={}):
@@ -351,7 +368,7 @@ class DataFrameEcharts:
         if not isinstance(ys, list):
             ys = [ys]
 
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_geo))(
             df=df,
@@ -363,7 +380,8 @@ class DataFrameEcharts:
             agg_func=agg_func,
             label_show=label_show,
             visualmap=visualmap,
-            visualmap_opts=visualmap_opts
+            visualmap_opts=visualmap_opts,
+            theme=theme
         )
 
     def map(self,
@@ -376,12 +394,13 @@ class DataFrameEcharts:
             label_show=False,
             visualmap=False,
             visualmap_opts={},
+            theme=None,
             by=None,
             timeline=None,
             timeline_opts={}):
         df = self._obj.copy()
 
-        td = timeline_decorator(timeline, timeline_opts)
+        td = timeline_decorator(timeline, timeline_opts, theme)
         bd = by_decorator(by=by)
         return td(bd(get_map))(
             df=df,
@@ -393,7 +412,8 @@ class DataFrameEcharts:
             agg_func=agg_func,
             label_show=label_show,
             visualmap=visualmap,
-            visualmap_opts=visualmap_opts
+            visualmap_opts=visualmap_opts,
+            theme=theme
         )
 
 
