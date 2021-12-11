@@ -1,11 +1,14 @@
 import warnings
 import numpy as np
-import pandas as pd
 from pyecharts.charts import Page, Timeline
 from pyecharts.charts import Line, Bar, Pie, Scatter
 from pyecharts.charts import Line3D, Bar3D, Scatter3D
 from pyecharts.charts import Boxplot, Funnel, Geo, Map
 from pyecharts import options as opts
+from .data_tool import infer_dtype
+
+
+# TODO: 图标的点支持自定义类型，比如line geo里的点形状
 
 # TODO: 需支持可定制，类似pd.xxxxsize=100等可以设置全局属性，
 # 数组的唯一值超过该数字，则认为变量为连续性？也许可以参考catboost怎么区分连续和离散变量
@@ -247,10 +250,7 @@ def get_line(df,
     )
 
     if xtype is None:
-        if pd.api.types.infer_dtype(df[x]) == "string":
-            xtype = "category"
-        else:
-            xtype = "value"
+        xtype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
 
     line.set_global_opts(
@@ -278,22 +278,13 @@ def get_line3d(df,
                visualmap_opts,
                theme):
     if xtype is None:
-        if pd.api.types.infer_dtype(df[x]) == "string":
-            xtype = "category"
-        else:
-            xtype = "value"
+        xtype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
     if ytype is None:
-        if pd.api.types.infer_dtype(df[y]) == "string":
-            ytype = "category"
-        else:
-            ytype = "value"
+        ytype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument ytype, '{ytype}' is infered!")
     if ztype is None:
-        if pd.api.types.infer_dtype(df[z]) == "string":
-            ztype = "category"
-        else:
-            ztype = "value"
+        ztype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument ztype, '{ztype}' is infered!")
 
     if theme is not None:
@@ -396,22 +387,13 @@ def get_scatter3d(df,
                   visualmap_opts,
                   theme):
     if xtype is None:
-        if pd.api.types.infer_dtype(df[x]) == "string":
-            xtype = "category"
-        else:
-            xtype = "value"
+        xtype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
     if ytype is None:
-        if pd.api.types.infer_dtype(df[y]) == "string":
-            ytype = "category"
-        else:
-            ytype = "value"
+        ytype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument ytype, '{ytype}' is infered!")
     if ztype is None:
-        if pd.api.types.infer_dtype(df[z]) == "string":
-            ztype = "category"
-        else:
-            ztype = "value"
+        ztype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument ztype, '{ztype}' is infered!")
 
     if theme is not None:
@@ -526,7 +508,6 @@ def get_geo(df,
         geo = Geo()
     geo.add_schema(maptype=maptype)
     for y in ys:
-        # TODO: add 支持 type_
         geo.add(str(y), df[[x, y]].values.tolist())
 
     geo.set_series_opts(label_opts=opts.LabelOpts(is_show=label_show))

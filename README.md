@@ -47,18 +47,22 @@ $ python setup.py install
 
 * [x] Pie
 * [x] Bar
-* [x] Bar3d
+* [x] Bar3D
 * [x] Line
+* [x] Line3D 
 * [x] Scatter
+* [x] Scatter3D
+* [x] Boxplot
+* [x] Geo
+* [x] Map
+* [x] Funnel
+  
+后续更新
+* [ ] 支持更多自定义样式
+* [ ] 完善说明和使用文档
 
-后续支持
 
-* [ ] Boxplot
-* [ ] Funnel
-* [ ] Line3d
-* [ ] Scatter3d
-* [ ] Geo
-* [ ] Map
+
 
 ## License
 
