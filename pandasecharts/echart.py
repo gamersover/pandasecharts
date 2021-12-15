@@ -12,12 +12,13 @@ class DataFrameEcharts:
         self._obj = pandas_obj
 
     def pie(self,
-            x="",
-            y="",
+            x,
+            y,
             title="",
             subtitle="",
             agg_func=None,
             label_show=False,
+            label_opts={},
             legend_opts={},
             theme=None,
             by=None,
@@ -35,14 +36,15 @@ class DataFrameEcharts:
             title=title,
             subtitle=subtitle,
             label_show=label_show,
+            label_opts=label_opts,
             agg_func=agg_func,
             legend_opts=legend_opts,
             theme=theme,
         )
 
     def bar(self,
-            x="",
-            ys="",
+            x,
+            ys,
             xaxis_name=None,
             yaxis_name="",
             title="",
@@ -50,6 +52,7 @@ class DataFrameEcharts:
             agg_func=None,
             stack_view=False,
             label_show=False,
+            label_opts={},
             reverse_axis=False,
             legend_opts={},
             theme=None,
@@ -79,14 +82,15 @@ class DataFrameEcharts:
             stack_view=stack_view,
             reverse_axis=reverse_axis,
             label_show=label_show,
+            label_opts=label_opts,
             legend_opts=legend_opts,
             theme=theme
         )
 
     def bar3d(self,
-              x="",
-              y="",
-              z="",
+              x,
+              y,
+              z,
               xaxis_name=None,
               yaxis_name=None,
               zaxis_name=None,
@@ -122,8 +126,8 @@ class DataFrameEcharts:
         )
 
     def line(self,
-             x="",
-             ys="",
+             x,
+             ys,
              xtype=None,
              xaxis_name=None,
              yaxis_name="",
@@ -132,6 +136,7 @@ class DataFrameEcharts:
              agg_func=None,
              smooth=False,
              label_show=False,
+             label_opts={},
              legend_opts={},
              theme=None,
              by=None,
@@ -160,14 +165,15 @@ class DataFrameEcharts:
             agg_func=agg_func,
             smooth=smooth,
             label_show=label_show,
+            label_opts=label_opts,
             legend_opts=legend_opts,
             theme=theme
         )
 
     def line3d(self,
-               x="",
-               y="",
-               z="",
+               x,
+               y,
+               z,
                xtype=None,
                ytype=None,
                ztype=None,
@@ -208,8 +214,8 @@ class DataFrameEcharts:
         )
 
     def scatter(self,
-                x="",
-                ys="",
+                x,
+                ys,
                 xtype=None,
                 xaxis_name=None,
                 yaxis_name="",
@@ -217,6 +223,7 @@ class DataFrameEcharts:
                 subtitle="",
                 agg_func=None,
                 label_show=False,
+                label_opts={},
                 legend_opts={},
                 visualmap=False,
                 visualmap_opts={},
@@ -246,6 +253,7 @@ class DataFrameEcharts:
             subtitle=subtitle,
             agg_func=agg_func,
             label_show=label_show,
+            label_opts=label_opts,
             legend_opts=legend_opts,
             visualmap=visualmap,
             visualmap_opts=visualmap_opts,
@@ -253,9 +261,9 @@ class DataFrameEcharts:
         )
 
     def scatter3d(self,
-                  x="",
-                  y="",
-                  z="",
+                  x,
+                  y,
+                  z,
                   xtype=None,
                   ytype=None,
                   ztype=None,
@@ -296,7 +304,7 @@ class DataFrameEcharts:
         )
 
     def boxplot(self,
-                ys="",
+                ys,
                 xaxis_name="",
                 yaxis_name="",
                 title="",
@@ -325,8 +333,8 @@ class DataFrameEcharts:
         )
 
     def funnel(self,
-               x="",
-               y="",
+               x,
+               y,
                title="",
                subtitle="",
                ascending=False,
@@ -352,8 +360,8 @@ class DataFrameEcharts:
         )
 
     def geo(self,
-            x="",
-            ys="",
+            x,
+            ys,
             maptype="",
             title="",
             subtitle="",
@@ -386,8 +394,8 @@ class DataFrameEcharts:
         )
 
     def map(self,
-            x="",
-            y="",
+            x,
+            y,
             maptype="",
             title="",
             subtitle="",
@@ -422,10 +430,7 @@ class DataFrameEcharts:
 class SeriesEcharts:
     def __init__(self, series_obj):
         self._obj = series_obj
-        # TODO: series 需要区分数据是离散类型还是连续类型
-        # TODO: 对于连续变量可以使用freedman_diaconis规则获取bins个数，参考自seaborn里的distplot
-        # TODO: bar和line可以支持显示density还是count，类似numpy.histogram
-    
+
     def _get_dist(self, dtype, bins):
         df = self._obj.copy().to_frame()
         xcol = df.columns[0]
@@ -446,6 +451,7 @@ class SeriesEcharts:
             title="",
             subtitle="",
             label_show=False,
+            label_opts={},
             legend_opts={},
             theme=None):
         df, xcol, ycol = self._get_dist(dtype, bins)
@@ -456,6 +462,7 @@ class SeriesEcharts:
             title=title,
             subtitle=subtitle,
             label_show=label_show,
+            label_opts=label_opts,
             agg_func='sum',
             legend_opts=legend_opts,
             theme=theme,
@@ -470,12 +477,13 @@ class SeriesEcharts:
             subtitle="",
             reverse_axis=False,
             label_show=False,
+            label_opts={},
             legend_opts={},
             theme=None):
         df, xcol, ycol = self._get_dist(dtype, bins)
+        df[xcol] = df[xcol].map(lambda i: i[0])
         if xaxis_name is None:
             xaxis_name = str(xcol)
-
         return get_bar(
             df,
             xcol,
@@ -485,9 +493,112 @@ class SeriesEcharts:
             title=title,
             subtitle=subtitle,
             label_show=label_show,
+            label_opts=label_opts,
             agg_func='sum',
             stack_view=False,
             reverse_axis=reverse_axis,
             legend_opts=legend_opts,
             theme=theme,
+        )
+
+    def line(self,
+             dtype=None,
+             bins=None,
+             xaxis_name=None,
+             yaxis_name="count",
+             title=None,
+             subtitle=None,
+             smooth=False,
+             label_show=False,
+             label_opts={},
+             legend_opts={},
+             theme=None
+             ):
+        df, xcol, ycol = self._get_dist(dtype, bins)
+        df[xcol] = df[xcol].map(lambda i: i[0])
+        if xaxis_name is None:
+            xaxis_name = str(xcol)
+        return get_line(
+            df,
+            xcol,
+            [ycol],
+            xtype=dtype,
+            xaxis_name=xaxis_name,
+            yaxis_name=yaxis_name,
+            title=title,
+            subtitle=subtitle,
+            agg_func="sum",
+            smooth=smooth,
+            label_show=label_show,
+            label_opts=label_opts,
+            legend_opts=legend_opts,
+            theme=theme
+        )
+
+    def boxplot(self,
+                xaxis_name=None,
+                yaxis_name="",
+                title="",
+                subtitle="",
+                legend_opts={},
+                theme=None):
+        df = self._obj.to_frame()
+        xcol = df.columns[0]
+        if xaxis_name is None:
+            xaxis_name = str(xcol)
+        return get_boxplot(
+                df,
+                [xcol],
+                xaxis_name=xaxis_name,
+                yaxis_name=yaxis_name,
+                title=title,
+                subtitle=subtitle,
+                legend_opts=legend_opts,
+                theme=theme
+        )
+
+    def geo(self,
+            maptype,
+            title="",
+            subtitle="",
+            label_show=False,
+            visualmap=False,
+            visualmap_opts={},
+            theme=None):
+        df, xcol, ycol = self._get_dist('category', None)
+        return get_geo(
+            df,
+            xcol,
+            [ycol],
+            maptype=maptype,
+            title=title,
+            subtitle=subtitle,
+            agg_func='sum',
+            label_show=label_show,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts,
+            theme=theme
+        )
+
+    def map(self,
+            maptype,
+            title="",
+            subtitle="",
+            label_show=False,
+            visualmap=False,
+            visualmap_opts={},
+            theme=None):
+        df, xcol, ycol = self._get_dist('category', None)
+        return get_map(
+            df,
+            xcol,
+            ycol,
+            maptype=maptype,
+            title=title,
+            subtitle=subtitle,
+            agg_func='sum',
+            label_show=label_show,
+            visualmap=visualmap,
+            visualmap_opts=visualmap_opts,
+            theme=theme
         )

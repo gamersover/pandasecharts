@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from .config import options
 
 
 def infer_dtype(series):
@@ -9,12 +10,7 @@ def infer_dtype(series):
         return "value"
 
 
-# TODO: 需支持可定制，类似pd.xxxxsize=100等可以设置全局属性，
-# 数组的唯一值超过该数字，则认为变量为连续性？也许可以参考catboost怎么区分连续和离散变量
-max_discrete_size = 50
-
-
-# TODO: 标注该算法来自于seaborn里的distplot
+# 该算法参考https://github.com/mwaskom/seaborn/blob/master/seaborn/distributions.py#L2419
 def _freedman_diaconis_bins(a):
     a = np.asarray(a)
     if len(a) < 2:
@@ -30,7 +26,7 @@ def _freedman_diaconis_bins(a):
 def _categorize_array(a, bins=None):
     a = np.asarray(a)
     if bins is None:
-        bins = min(_freedman_diaconis_bins(a), max_discrete_size)
+        bins = min(_freedman_diaconis_bins(a), options.get("max_bins"))
     _, bin_edges = np.histogram(a, bins)
     cat_a = np.digitize(a, bins=bin_edges)
     cat2region = dict(

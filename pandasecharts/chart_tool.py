@@ -56,6 +56,7 @@ def get_pie(df,
             title,
             subtitle,
             label_show,
+            label_opts,
             agg_func,
             legend_opts,
             theme):
@@ -67,14 +68,18 @@ def get_pie(df,
     else:
         pie = Pie()
 
+    label_opts_ = {
+        "formatter": "{b}:{d}%",
+        "position": "inner",
+        "is_show": label_show
+    }
+    label_opts_.update(label_opts)
+
     pie = (
         pie
         .add(str(y), df[[x, y]].values.tolist())
         .set_series_opts(
-            label_opts=opts.LabelOpts(
-                formatter="{b}:{d}%",
-                position="inner",
-                is_show=label_show)
+            label_opts=opts.LabelOpts(**label_opts_)
         )
         .set_global_opts(
             title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
@@ -95,6 +100,7 @@ def get_bar(df,
             stack_view,
             reverse_axis,
             label_show,
+            label_opts,
             legend_opts,
             theme):
     if stack_view:
@@ -114,13 +120,16 @@ def get_bar(df,
     for y, st in zip(ys, stack):
         bar.add_yaxis(str(y), df[y].values.tolist(), stack=st)
 
-    # TODO: 是否加入label_opts参数
+    label_opts_ = {
+        "position": "right" if stack_view or reverse_axis else "top",
+        "is_show": label_show
+    }
+    label_opts_.update(label_opts)
+
     bar.set_series_opts(
-        label_opts=opts.LabelOpts(
-            position="right" if stack_view or reverse_axis else "top",
-            is_show=label_show
-        ),
+        label_opts=opts.LabelOpts(**label_opts_),
     )
+    # bar的x轴只支持category，不支持value
     if reverse_axis:
         bar.reversal_axis()
         bar.set_global_opts(
@@ -191,12 +200,11 @@ def get_line(df,
              agg_func,
              smooth,
              label_show,
+             label_opts,
              legend_opts,
              theme):
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
-
-    df = df.sort_values(by=x)
 
     if theme is not None:
         line = Line(init_opts=opts.InitOpts(theme=theme))
@@ -206,11 +214,14 @@ def get_line(df,
     line = line.add_xaxis(df[x].values.tolist())
 
     for y in ys:
-        line.add_yaxis(str(y), df[y].values.tolist(),
+        line.add_yaxis(str(y),
+                       df[y].values.tolist(),
                        is_smooth=smooth)
 
+    label_opts_ = {"is_show": label_show}
+    label_opts_.update(label_opts)
     line.set_series_opts(
-        label_opts=opts.LabelOpts(is_show=label_show)
+        label_opts=opts.LabelOpts(**label_opts_)
     )
 
     if xtype is None:
@@ -289,6 +300,7 @@ def get_scatter(df,
                 subtitle,
                 agg_func,
                 label_show,
+                label_opts,
                 legend_opts,
                 visualmap,
                 visualmap_opts,
@@ -305,8 +317,10 @@ def get_scatter(df,
     for y in ys:
         scatter.add_yaxis(str(y), df[y].values.tolist())
 
+    label_opts_ = {"is_show": label_show}
+    label_opts_.update(label_opts)
     scatter.set_series_opts(
-        label_opts=opts.LabelOpts(is_show=label_show)
+        label_opts=opts.LabelOpts(**label_opts_)
     )
 
     if xtype is None:
