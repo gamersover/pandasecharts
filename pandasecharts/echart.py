@@ -3,6 +3,7 @@ from .chart_tool import get_pie, get_bar, get_line, get_scatter
 from .chart_tool import get_bar3d, get_line3d, get_scatter3d
 from .chart_tool import get_boxplot, get_funnel, get_geo, get_map
 from .chart_tool import timeline_decorator, by_decorator
+from .data_tool import infer_dtype, _categorize_array
 
 
 @pd.api.extensions.register_dataframe_accessor("echart")
@@ -422,9 +423,71 @@ class SeriesEcharts:
     def __init__(self, series_obj):
         self._obj = series_obj
         # TODO: series 需要区分数据是离散类型还是连续类型
-        # TODO: series 只支持画单个变量的分布图，
-        # 对于连续变量可以使用freedman_diaconis规则获取bins个数，参考自seaborn里的distplot
+        # TODO: 对于连续变量可以使用freedman_diaconis规则获取bins个数，参考自seaborn里的distplot
         # TODO: bar和line可以支持显示density还是count，类似numpy.histogram
+    
+    def _get_dist(self, dtype, bins):
+        df = self._obj.copy().to_frame()
+        xcol = df.columns[0]
 
-    def pie():
-        pass
+        if dtype is None:
+            dtype = infer_dtype(df[xcol])
+        if dtype == "value":
+            df[xcol] = _categorize_array(df[xcol].values.tolist(), bins=bins)
+            df = df.sort_values(by=xcol)
+
+        ycol = "count_" if xcol == "count" else "count"
+        df[ycol] = 1
+        return df, xcol, ycol
+
+    def pie(self,
+            dtype=None,
+            bins=None,
+            title="",
+            subtitle="",
+            label_show=False,
+            legend_opts={},
+            theme=None):
+        df, xcol, ycol = self._get_dist(dtype, bins)
+        return get_pie(
+            df,
+            xcol,
+            ycol,
+            title=title,
+            subtitle=subtitle,
+            label_show=label_show,
+            agg_func='sum',
+            legend_opts=legend_opts,
+            theme=theme,
+        )
+
+    def bar(self,
+            dtype=None,
+            bins=None,
+            xaxis_name=None,
+            yaxis_name="count",
+            title="",
+            subtitle="",
+            reverse_axis=False,
+            label_show=False,
+            legend_opts={},
+            theme=None):
+        df, xcol, ycol = self._get_dist(dtype, bins)
+        if xaxis_name is None:
+            xaxis_name = str(xcol)
+
+        return get_bar(
+            df,
+            xcol,
+            [ycol],
+            xaxis_name=xaxis_name,
+            yaxis_name=yaxis_name,
+            title=title,
+            subtitle=subtitle,
+            label_show=label_show,
+            agg_func='sum',
+            stack_view=False,
+            reverse_axis=reverse_axis,
+            legend_opts=legend_opts,
+            theme=theme,
+        )

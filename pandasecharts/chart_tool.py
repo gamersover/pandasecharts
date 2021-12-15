@@ -10,50 +10,6 @@ from .data_tool import infer_dtype
 
 # TODO: 图标的点支持自定义类型，比如line geo里的点形状
 
-# TODO: 需支持可定制，类似pd.xxxxsize=100等可以设置全局属性，
-# 数组的唯一值超过该数字，则认为变量为连续性？也许可以参考catboost怎么区分连续和离散变量
-max_discrete_size = 50
-
-
-# TODO: 标注该算法来自于seaborn里的distplot
-def _freedman_diaconis_bins(a):
-    a = np.asarray(a)
-    if len(a) < 2:
-        return 1
-    iqr = np.subtract.reduce(np.nanpercentile(a, [75, 25]))
-    h = 2 * iqr / (len(a) ** (1 / 3))
-    if h == 0:
-        return int(np.sqrt(a.size))
-    else:
-        return int(np.ceil((a.max() - a.min()) / h))
-
-
-def _categorize_array(a, category='auto'):
-    a = np.asarray(a)
-    if category == 'auto':
-        if a.dtype.type is np.str_:
-            category = 1
-        elif len(np.unique(a)) > max_discrete_size:
-            category = 0
-        else:
-            category = 1
-
-    if category == 1:
-        return a
-
-    if category > 0:
-        cat_bins = category
-    else:
-        cat_bins = min(_freedman_diaconis_bins(a), max_discrete_size)
-
-    _, bin_edges = np.histogram(a, cat_bins)
-    cat_a = np.digitize(a, bins=bin_edges)
-    cat2region = dict(
-        zip(range(1, cat_bins+1), zip(bin_edges[:-1], bin_edges[1:])))
-    region_a = [cat2region[min(c, cat_bins)] for c in cat_a]
-    return region_a
-
-
 def by_decorator(by=None):
     def wrapper(func):
         def inner(**kwargs):
@@ -158,20 +114,28 @@ def get_bar(df,
     for y, st in zip(ys, stack):
         bar.add_yaxis(str(y), df[y].values.tolist(), stack=st)
 
+    # TODO: 是否加入label_opts参数
     bar.set_series_opts(
         label_opts=opts.LabelOpts(
             position="right" if stack_view or reverse_axis else "top",
             is_show=label_show
         ),
     )
+    if reverse_axis:
+        bar.reversal_axis()
+        bar.set_global_opts(
+            xaxis_opts=opts.AxisOpts(name=yaxis_name, type_='value'),
+            yaxis_opts=opts.AxisOpts(name=xaxis_name, type_='category')
+        )
+    else:
+        bar.set_global_opts(
+            xaxis_opts=opts.AxisOpts(name=xaxis_name, type_='category'),
+            yaxis_opts=opts.AxisOpts(name=yaxis_name, type_='value')
+        )
     bar.set_global_opts(
-        xaxis_opts=opts.AxisOpts(name=xaxis_name, type_='category'),
-        yaxis_opts=opts.AxisOpts(name=yaxis_name, type_='value'),
         title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
         legend_opts=opts.LegendOpts(**legend_opts),
     )
-    if reverse_axis:
-        bar.reversal_axis()
     return bar
 
 
