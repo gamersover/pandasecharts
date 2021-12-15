@@ -10,8 +10,10 @@
   </a>
 </p>
 
+[English README](README_en.md)
+
 ## 简介
-基于[pandas](https://github.com/pandas-dev/pandas)和[pyecharts](https://github.com/pyecharts/pyecharts)的可视化工具
+基于[pandas](https://github.com/pandas-dev/pandas)和[pyecharts](https://github.com/pyecharts/pyecharts)的可视化工具，该项目的旨在**用一行代码可视化您的pandas数据**。
 
 ## 安装
 pip 安装
