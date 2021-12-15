@@ -60,6 +60,10 @@ class DataFrameEcharts:
             timeline=None,
             timeline_opts={}):
         df = self._obj.copy()
+        # 由于dataframe的bar的x轴可以只考虑离散值，所以先按照
+        # x排序，然后将x转为字符串类型，注意要在转str前排序，要不然
+        # 会按照字典排序，从而造成数字排序很奇怪
+        df = df.sort_values(by=x)
         df[x] = df[x].astype(str)
 
         if xaxis_name is None:
@@ -143,8 +147,6 @@ class DataFrameEcharts:
              timeline=None,
              timeline_opts={}):
         df = self._obj.copy()
-        df[x] = df[x].astype(str)
-
         if xaxis_name is None:
             xaxis_name = x
 
@@ -438,6 +440,7 @@ class SeriesEcharts:
         if dtype is None:
             dtype = infer_dtype(df[xcol])
         if dtype == "value":
+            # TODO: 当数据本身不超过max_bins的大小还需要调用这个函数
             df[xcol] = _categorize_array(df[xcol].values.tolist(), bins=bins)
             df = df.sort_values(by=xcol)
 
@@ -446,7 +449,7 @@ class SeriesEcharts:
         return df, xcol, ycol
 
     def pie(self,
-            dtype=None,
+            xtype=None,
             bins=None,
             title="",
             subtitle="",
@@ -454,7 +457,7 @@ class SeriesEcharts:
             label_opts={},
             legend_opts={},
             theme=None):
-        df, xcol, ycol = self._get_dist(dtype, bins)
+        df, xcol, ycol = self._get_dist(xtype, bins)
         return get_pie(
             df,
             xcol,
@@ -469,7 +472,7 @@ class SeriesEcharts:
         )
 
     def bar(self,
-            dtype=None,
+            xtype=None,
             bins=None,
             xaxis_name=None,
             yaxis_name="count",
@@ -480,8 +483,7 @@ class SeriesEcharts:
             label_opts={},
             legend_opts={},
             theme=None):
-        df, xcol, ycol = self._get_dist(dtype, bins)
-        df[xcol] = df[xcol].map(lambda i: i[0])
+        df, xcol, ycol = self._get_dist(xtype, bins)
         if xaxis_name is None:
             xaxis_name = str(xcol)
         return get_bar(
@@ -502,7 +504,7 @@ class SeriesEcharts:
         )
 
     def line(self,
-             dtype=None,
+             xtype=None,
              bins=None,
              xaxis_name=None,
              yaxis_name="count",
@@ -512,17 +514,15 @@ class SeriesEcharts:
              label_show=False,
              label_opts={},
              legend_opts={},
-             theme=None
-             ):
-        df, xcol, ycol = self._get_dist(dtype, bins)
-        df[xcol] = df[xcol].map(lambda i: i[0])
+             theme=None):
+        df, xcol, ycol = self._get_dist(xtype, bins)
         if xaxis_name is None:
             xaxis_name = str(xcol)
         return get_line(
             df,
             xcol,
             [ycol],
-            xtype=dtype,
+            xtype=xtype,
             xaxis_name=xaxis_name,
             yaxis_name=yaxis_name,
             title=title,

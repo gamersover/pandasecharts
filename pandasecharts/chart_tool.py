@@ -203,6 +203,13 @@ def get_line(df,
              label_opts,
              legend_opts,
              theme):
+    if xtype is None:
+        xtype = infer_dtype(df[x])
+        warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
+
+    if xtype == "category":
+        df[x] = df[x].astype(str)
+
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
@@ -223,10 +230,6 @@ def get_line(df,
     line.set_series_opts(
         label_opts=opts.LabelOpts(**label_opts_)
     )
-
-    if xtype is None:
-        xtype = infer_dtype(df[x])
-        warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
 
     line.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),

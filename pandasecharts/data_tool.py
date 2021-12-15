@@ -31,5 +31,5 @@ def _categorize_array(a, bins=None):
     cat_a = np.digitize(a, bins=bin_edges)
     cat2region = dict(
         zip(range(1, bins+1), zip(bin_edges[:-1], bin_edges[1:])))
-    region_a = [cat2region[min(c, bins)] for c in cat_a]
+    region_a = [cat2region[min(c, bins)][0] for c in cat_a]
     return region_a
