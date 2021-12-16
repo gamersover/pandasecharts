@@ -26,6 +26,8 @@ def _freedman_diaconis_bins(a):
 def _categorize_array(a, bins=None):
     a = np.asarray(a)
     if bins is None:
+        if len(a) < bins:
+            return a
         bins = min(_freedman_diaconis_bins(a), options.get("max_bins"))
     _, bin_edges = np.histogram(a, bins)
     cat_a = np.digitize(a, bins=bin_edges)
