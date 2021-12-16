@@ -43,6 +43,8 @@ $ python setup.py install
   
 ![img](https://cdn.jsdelivr.net/gh/gamersover/hexo_blog_assets@main/pandasecharts示例/Kapture-2021-12-02-at-19.56.33.28ztwkmukni8.gif)
 
+更多使用方法请访问[example](examples/bar_examples.ipynb)
+
 ## 后续计划
 
 目前已支持图表类型
