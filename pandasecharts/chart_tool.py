@@ -96,6 +96,7 @@ def get_bar(df,
             yaxis_name,
             title,
             subtitle,
+            sort,
             agg_func,
             stack_view,
             reverse_axis,
@@ -110,6 +111,10 @@ def get_bar(df,
 
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
+
+    if sort is not None:
+        # 排序显示的顺序和是否反转坐标轴有关
+        df = df.sort_values(by=sort, ascending=reverse_axis)
 
     if theme is not None:
         bar = Bar(init_opts=opts.InitOpts(theme=theme))
