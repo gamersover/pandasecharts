@@ -442,7 +442,6 @@ class SeriesEcharts:
         if dtype is None:
             dtype = infer_dtype(df[xcol])
         if dtype == "value":
-            # TODO: 当数据本身不超过max_bins的大小还需要调用这个函数
             df[xcol] = _categorize_array(df[xcol].values.tolist(), bins=bins)
             df = df.sort_values(by=xcol)
 
@@ -480,6 +479,7 @@ class SeriesEcharts:
             yaxis_name="count",
             title="",
             subtitle="",
+            sort=None,
             reverse_axis=False,
             label_show=False,
             label_opts={},
@@ -488,6 +488,8 @@ class SeriesEcharts:
         df, xcol, ycol = self._get_dist(xtype, bins)
         if xaxis_name is None:
             xaxis_name = str(xcol)
+        if sort is not None:
+            sort = ycol
         return get_bar(
             df,
             xcol,
@@ -496,6 +498,7 @@ class SeriesEcharts:
             yaxis_name=yaxis_name,
             title=title,
             subtitle=subtitle,
+            sort=sort,
             label_show=label_show,
             label_opts=label_opts,
             agg_func='sum',
