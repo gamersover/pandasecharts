@@ -10,50 +10,6 @@ from .data_tool import infer_dtype
 
 # TODO: 图标的点支持自定义类型，比如line geo里的点形状
 
-# TODO: 需支持可定制，类似pd.xxxxsize=100等可以设置全局属性，
-# 数组的唯一值超过该数字，则认为变量为连续性？也许可以参考catboost怎么区分连续和离散变量
-max_discrete_size = 50
-
-
-# TODO: 标注该算法来自于seaborn里的distplot
-def _freedman_diaconis_bins(a):
-    a = np.asarray(a)
-    if len(a) < 2:
-        return 1
-    iqr = np.subtract.reduce(np.nanpercentile(a, [75, 25]))
-    h = 2 * iqr / (len(a) ** (1 / 3))
-    if h == 0:
-        return int(np.sqrt(a.size))
-    else:
-        return int(np.ceil((a.max() - a.min()) / h))
-
-
-def _categorize_array(a, category='auto'):
-    a = np.asarray(a)
-    if category == 'auto':
-        if a.dtype.type is np.str_:
-            category = 1
-        elif len(np.unique(a)) > max_discrete_size:
-            category = 0
-        else:
-            category = 1
-
-    if category == 1:
-        return a
-
-    if category > 0:
-        cat_bins = category
-    else:
-        cat_bins = min(_freedman_diaconis_bins(a), max_discrete_size)
-
-    _, bin_edges = np.histogram(a, cat_bins)
-    cat_a = np.digitize(a, bins=bin_edges)
-    cat2region = dict(
-        zip(range(1, cat_bins+1), zip(bin_edges[:-1], bin_edges[1:])))
-    region_a = [cat2region[min(c, cat_bins)] for c in cat_a]
-    return region_a
-
-
 def by_decorator(by=None):
     def wrapper(func):
         def inner(**kwargs):
@@ -100,6 +56,7 @@ def get_pie(df,
             title,
             subtitle,
             label_show,
+            label_opts,
             agg_func,
             legend_opts,
             theme):
@@ -111,14 +68,18 @@ def get_pie(df,
     else:
         pie = Pie()
 
+    label_opts_ = {
+        "formatter": "{b}:{d}%",
+        "position": "inner",
+        "is_show": label_show
+    }
+    label_opts_.update(label_opts)
+
     pie = (
         pie
         .add(str(y), df[[x, y]].values.tolist())
         .set_series_opts(
-            label_opts=opts.LabelOpts(
-                formatter="{b}:{d}%",
-                position="inner",
-                is_show=label_show)
+            label_opts=opts.LabelOpts(**label_opts_)
         )
         .set_global_opts(
             title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
@@ -139,6 +100,7 @@ def get_bar(df,
             stack_view,
             reverse_axis,
             label_show,
+            label_opts,
             legend_opts,
             theme):
     if stack_view:
@@ -158,20 +120,31 @@ def get_bar(df,
     for y, st in zip(ys, stack):
         bar.add_yaxis(str(y), df[y].values.tolist(), stack=st)
 
+    label_opts_ = {
+        "position": "right" if stack_view or reverse_axis else "top",
+        "is_show": label_show
+    }
+    label_opts_.update(label_opts)
+
     bar.set_series_opts(
-        label_opts=opts.LabelOpts(
-            position="right" if stack_view or reverse_axis else "top",
-            is_show=label_show
-        ),
+        label_opts=opts.LabelOpts(**label_opts_),
     )
+    # bar的x轴只支持category，不支持value
+    if reverse_axis:
+        bar.reversal_axis()
+        bar.set_global_opts(
+            xaxis_opts=opts.AxisOpts(name=yaxis_name, type_='value'),
+            yaxis_opts=opts.AxisOpts(name=xaxis_name, type_='category')
+        )
+    else:
+        bar.set_global_opts(
+            xaxis_opts=opts.AxisOpts(name=xaxis_name, type_='category'),
+            yaxis_opts=opts.AxisOpts(name=yaxis_name, type_='value')
+        )
     bar.set_global_opts(
-        xaxis_opts=opts.AxisOpts(name=xaxis_name, type_='category'),
-        yaxis_opts=opts.AxisOpts(name=yaxis_name, type_='value'),
         title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
         legend_opts=opts.LegendOpts(**legend_opts),
     )
-    if reverse_axis:
-        bar.reversal_axis()
     return bar
 
 
@@ -227,12 +200,18 @@ def get_line(df,
              agg_func,
              smooth,
              label_show,
+             label_opts,
              legend_opts,
              theme):
+    if xtype is None:
+        xtype = infer_dtype(df[x])
+        warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
+
+    if xtype == "category":
+        df[x] = df[x].astype(str)
+
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
-
-    df = df.sort_values(by=x)
 
     if theme is not None:
         line = Line(init_opts=opts.InitOpts(theme=theme))
@@ -242,16 +221,15 @@ def get_line(df,
     line = line.add_xaxis(df[x].values.tolist())
 
     for y in ys:
-        line.add_yaxis(str(y), df[y].values.tolist(),
+        line.add_yaxis(str(y),
+                       df[y].values.tolist(),
                        is_smooth=smooth)
 
+    label_opts_ = {"is_show": label_show}
+    label_opts_.update(label_opts)
     line.set_series_opts(
-        label_opts=opts.LabelOpts(is_show=label_show)
+        label_opts=opts.LabelOpts(**label_opts_)
     )
-
-    if xtype is None:
-        xtype = infer_dtype(df[x])
-        warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
 
     line.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),
@@ -325,6 +303,7 @@ def get_scatter(df,
                 subtitle,
                 agg_func,
                 label_show,
+                label_opts,
                 legend_opts,
                 visualmap,
                 visualmap_opts,
@@ -341,8 +320,10 @@ def get_scatter(df,
     for y in ys:
         scatter.add_yaxis(str(y), df[y].values.tolist())
 
+    label_opts_ = {"is_show": label_show}
+    label_opts_.update(label_opts)
     scatter.set_series_opts(
-        label_opts=opts.LabelOpts(is_show=label_show)
+        label_opts=opts.LabelOpts(**label_opts_)
     )
 
     if xtype is None:
