@@ -8,8 +8,6 @@ from pyecharts import options as opts
 from .data_tool import infer_dtype
 
 
-# TODO: 图标的点支持自定义类型，比如line geo里的点形状
-
 def by_decorator(by=None):
     def wrapper(func):
         def inner(**kwargs):
@@ -28,14 +26,11 @@ def by_decorator(by=None):
     return wrapper
 
 
-def timeline_decorator(timeline=None, timeline_opts={}, theme=None):
+def timeline_decorator(timeline=None, timeline_opts={}, init_opts={}):
     def wrapper(func):
         def inner(**kwargs):
             if timeline is not None:
-                if theme is not None:
-                    tl = Timeline(init_opts=opts.InitOpts(theme=theme))
-                else:
-                    tl = Timeline()
+                tl = Timeline(init_opts=opts.InitOpts(**init_opts))
                 tl.add_schema(**timeline_opts)
                 for t, df_ in kwargs["df"].groupby(timeline):
                     new_kwargs = dict(kwargs)
@@ -59,14 +54,11 @@ def get_pie(df,
             label_opts,
             agg_func,
             legend_opts,
-            theme):
+            init_opts):
     if agg_func is not None:
         df = df.groupby(x)[y].agg(agg_func).reset_index()
 
-    if theme is not None:
-        pie = Pie(init_opts=opts.InitOpts(theme=theme))
-    else:
-        pie = Pie()
+    pie = Pie(init_opts=opts.InitOpts(**init_opts))
 
     label_opts_ = {
         "formatter": "{b}:{d}%",
@@ -103,7 +95,8 @@ def get_bar(df,
             label_show,
             label_opts,
             legend_opts,
-            theme):
+            init_opts):
+    # TODO: Bar也支持多y坐标轴
     if stack_view:
         stack = ["1"]*len(ys)
     else:
@@ -116,11 +109,7 @@ def get_bar(df,
         # 排序显示的顺序和是否反转坐标轴有关
         df = df.sort_values(by=sort, ascending=reverse_axis)
 
-    if theme is not None:
-        bar = Bar(init_opts=opts.InitOpts(theme=theme))
-    else:
-        bar = Bar()
-
+    bar = Bar(init_opts=opts.InitOpts(**init_opts))
     bar = bar.add_xaxis(df[x].values.tolist())
     for y, st in zip(ys, stack):
         bar.add_yaxis(str(y), df[y].values.tolist(), stack=st)
@@ -164,15 +153,9 @@ def get_bar3d(df,
               subtitle,
               visualmap,
               visualmap_opts,
-              theme):
-
-    if theme is not None:
-        bar3d = Bar3D(init_opts=opts.InitOpts(theme=theme))
-    else:
-        bar3d = Bar3D()
-
+              init_opts):
     bar3d = (
-        bar3d
+        Bar3D(init_opts=opts.InitOpts(**init_opts))
         .add(
             "",
             data=df[[x, y, z]].values.tolist(),
@@ -198,8 +181,9 @@ def get_line(df,
              x,
              ys,
              xtype,
+             multiple_yaxis,
              xaxis_name,
-             yaxis_name,
+             yaxis_names,
              title,
              subtitle,
              agg_func,
@@ -207,7 +191,8 @@ def get_line(df,
              label_show,
              label_opts,
              legend_opts,
-             theme):
+             init_opts):
+    # TODO: line的itemType
     if xtype is None:
         xtype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
@@ -218,17 +203,25 @@ def get_line(df,
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
-    if theme is not None:
-        line = Line(init_opts=opts.InitOpts(theme=theme))
-    else:
-        line = Line()
-
+    line = Line(init_opts=opts.InitOpts(**init_opts))
     line = line.add_xaxis(df[x].values.tolist())
 
-    for y in ys:
-        line.add_yaxis(str(y),
-                       df[y].values.tolist(),
-                       is_smooth=smooth)
+    if multiple_yaxis:
+        for i, y in enumerate(ys):
+            line.add_yaxis(str(y),
+                           df[y].values.tolist(),
+                           is_smooth=smooth,
+                           yaxis_index=i)
+        for j in range(1, len(ys)):
+            line.extend_axis(
+                yaxis=opts.AxisOpts(name=yaxis_names[j],
+                                    offset=30 * (j-1))
+            )
+    else:
+        for y in ys:
+            line.add_yaxis(str(y),
+                           df[y].values.tolist(),
+                           is_smooth=smooth)
 
     label_opts_ = {"is_show": label_show}
     label_opts_.update(label_opts)
@@ -238,9 +231,12 @@ def get_line(df,
 
     line.set_global_opts(
         xaxis_opts=opts.AxisOpts(name=xaxis_name, type_=xtype),
-        yaxis_opts=opts.AxisOpts(name=yaxis_name, type_="value"),
+        yaxis_opts=opts.AxisOpts(name=yaxis_names[0], type_="value"),
         title_opts=opts.TitleOpts(title=title, subtitle=subtitle),
         legend_opts=opts.LegendOpts(**legend_opts),
+        # TODO: tooltips_opts 支持自定义？
+        tooltip_opts=opts.TooltipOpts(trigger="axis",
+                                      axis_pointer_type="cross"),
     )
     return line
 
@@ -259,7 +255,7 @@ def get_line3d(df,
                subtitle,
                visualmap,
                visualmap_opts,
-               theme):
+               init_opts):
     if xtype is None:
         xtype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
@@ -270,13 +266,8 @@ def get_line3d(df,
         ztype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument ztype, '{ztype}' is infered!")
 
-    if theme is not None:
-        line3d = Line3D(init_opts=opts.InitOpts(theme=theme))
-    else:
-        line3d = Line3D()
-
     line3d = (
-        line3d
+        Line3D(init_opts=opts.InitOpts(**init_opts))
         .add(
             "",
             data=df[[x, y, z]].values.tolist(),
@@ -312,14 +303,11 @@ def get_scatter(df,
                 legend_opts,
                 visualmap,
                 visualmap_opts,
-                theme):
+                init_opts):
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
-    if theme is not None:
-        scatter = Scatter(init_opts=opts.InitOpts(theme=theme))
-    else:
-        scatter = Scatter()
+    scatter = Scatter(init_opts=opts.InitOpts(**init_opts))
     scatter.add_xaxis(df[x].values.tolist())
 
     for y in ys:
@@ -371,7 +359,7 @@ def get_scatter3d(df,
                   subtitle,
                   visualmap,
                   visualmap_opts,
-                  theme):
+                  init_opts):
     if xtype is None:
         xtype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument xtype, '{xtype}' is infered!")
@@ -382,10 +370,7 @@ def get_scatter3d(df,
         ztype = infer_dtype(df[x])
         warnings.warn(f"Please specify argument ztype, '{ztype}' is infered!")
 
-    if theme is not None:
-        scatter3d = Scatter3D(init_opts=opts.InitOpts(theme=theme))
-    else:
-        scatter3d = Scatter3D()
+    scatter3d = Scatter3D(init_opts=opts.InitOpts(**init_opts))
     scatter3d = (
         scatter3d
         .add(
@@ -416,11 +401,8 @@ def get_boxplot(df,
                 title,
                 subtitle,
                 legend_opts,
-                theme):
-    if theme is not None:
-        boxplot = Boxplot(init_opts=opts.InitOpts(theme=theme))
-    else:
-        boxplot = Boxplot()
+                init_opts):
+    boxplot = Boxplot(init_opts=opts.InitOpts(**init_opts))
 
     if all(isinstance(y, str) for y in ys):
         boxplot.add_xaxis(["expr"])
@@ -451,14 +433,9 @@ def get_funnel(df,
                ascending,
                position,
                legend_opts,
-               theme):
-    if theme is not None:
-        funnel = Funnel(init_opts=opts.InitOpts(theme=theme))
-    else:
-        funnel = Funnel()
-
+               init_opts):
     funnel = (
-        funnel
+        Funnel(init_opts=opts.InitOpts(**init_opts))
         .add(str(y),
              df[[x, y]].values.tolist(),
              sort_="ascending" if ascending else "desending",
@@ -481,17 +458,14 @@ def get_geo(df,
             label_show,
             visualmap,
             visualmap_opts,
-            theme):
+            init_opts):
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
     if maptype is None or len(maptype) == 0:
         warnings.warn("Please specify argument maptype, e.g. 'china'")
 
-    if theme is not None:
-        geo = Geo(init_opts=opts.InitOpts(theme=theme))
-    else:
-        geo = Geo()
+    geo = Geo(init_opts=opts.InitOpts(**init_opts))
     geo.add_schema(maptype=maptype)
     for y in ys:
         geo.add(str(y), df[[x, y]].values.tolist())
@@ -519,19 +493,15 @@ def get_map(df,
             label_show,
             visualmap,
             visualmap_opts,
-            theme):
+            init_opts):
     if agg_func is not None:
         df = df.groupby(x)[y].agg(agg_func).reset_index()
 
     if maptype is None or len(maptype) == 0:
         warnings.warn("Please specify argument maptype, e.g. 'china'")
 
-    if theme is not None:
-        map = Map(init_opts=opts.InitOpts(theme=theme))
-    else:
-        map = Map()
     map = (
-        map
+        Map(init_opts=opts.InitOpts(**init_opts))
         .add(str(y), df[[x, y]].values.tolist(), maptype)
         .set_series_opts(label_opts=opts.LabelOpts(is_show=label_show))
     )
