@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from .config import options
+from ..configs.basic_cfg import options
 
 
 def infer_dtype(series):

@@ -42,7 +42,7 @@ $ python setup.py install
 ![img](https://cdn.jsdelivr.net/gh/gamersover/hexo_blog_assets@main/pandasecharts示例/Kapture-2021-12-02-at-19.56.33.28ztwkmukni8.gif)
 
 For more documentation, please visit 
-* [document](https://caoqinping.com/tags/pandasecharts/)
+* [documentation](https://caoqinping.com/tags/pandasecharts/)
 * [example](examples/bar_examples.ipynb)
 
 
