@@ -45,7 +45,7 @@ $ python setup.py install
 
 更多使用方法请访问
 * [documentation](https://caoqinping.com/tags/pandasecharts/)
-* [example](examples/bar_examples.ipynb)
+* [example](examples/)
 
 ## 后续计划
 
@@ -62,10 +62,8 @@ $ python setup.py install
 * [x] Geo
 * [x] Map
 * [x] Funnel
-  
-后续更新
-* [ ] 支持更多自定义样式
-* [ ] 完善说明和使用文档
+* [x] 支持更多自定义样式
+* [x] 完善说明和使用文档
 
 
 

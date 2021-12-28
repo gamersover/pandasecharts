@@ -43,7 +43,7 @@ $ python setup.py install
 
 For more documentation, please visit 
 * [documentation](https://caoqinping.com/tags/pandasecharts/)
-* [example](examples/bar_examples.ipynb)
+* [example](examples/)
 
 
 ## TODO
@@ -61,11 +61,8 @@ Charts supported
 * [x] Geo
 * [x] Map
 * [x] Funnel
-  
-NEXT
-
-* [ ] support custom style
-* [ ] finish documentation
+* [x] support custom style
+* [x] finish documentation
 
 
 
