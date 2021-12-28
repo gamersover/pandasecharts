@@ -1,4 +1,5 @@
 import warnings
+import copy
 from pyecharts.charts import Page, Timeline
 from pyecharts.charts import Line, Bar, Pie, Scatter
 from pyecharts.charts import Line3D, Bar3D, Scatter3D
@@ -12,7 +13,7 @@ def by_decorator(by=None):
             if by is not None:
                 page = Page(layout=Page.DraggablePageLayout)
                 for by_value, by_df in kwargs["df"].groupby(by):
-                    new_kwargs = dict(kwargs)
+                    new_kwargs = copy.deepcopy(kwargs)
                     new_kwargs["df"] = by_df
                     new_kwargs["title_opts"]["subtitle"] += f"{by}={by_value}"
                     chart_ = func(**new_kwargs)
@@ -24,16 +25,18 @@ def by_decorator(by=None):
     return wrapper
 
 
-def timeline_decorator(timeline=None, timeline_opts={}, init_opts={}):
+def timeline_decorator(timeline=None, timeline_opts=None, init_opts=None):
+    if timeline_opts is None:
+        timeline_opts = {}
+
     def wrapper(func):
         def inner(**kwargs):
             if timeline is not None:
                 tl = Timeline(init_opts=opts.InitOpts(**init_opts))
                 tl.add_schema(**timeline_opts)
                 for t, df_ in kwargs["df"].groupby(timeline):
-                    new_kwargs = dict(kwargs)
-                    title = new_kwargs["title_opts"]["title"]
-                    new_kwargs["title_opts"]["title"] = f"{t}{title}"
+                    new_kwargs = copy.deepcopy(kwargs)
+                    new_kwargs["title_opts"]["title"] += f"{timeline}={t}"
                     new_kwargs["df"] = df_
                     chart_ = func(**new_kwargs)
                     tl.add(chart_, f"{t}")
@@ -51,14 +54,15 @@ def get_pie(df,
             init_opts,
             label_opts,
             title_opts,
-            legend_opts):
+            legend_opts,
+            pie_opts):
     if agg_func is not None:
         df = df.groupby(x)[y].agg(agg_func).reset_index()
 
     pie = Pie(init_opts=opts.InitOpts(**init_opts))
     pie = (
         pie
-        .add(str(y), df[[x, y]].values.tolist())
+        .add(str(y), df[[x, y]].values.tolist(), **pie_opts)
         .set_series_opts(
             label_opts=opts.LabelOpts(**label_opts)
         )
@@ -84,7 +88,8 @@ def get_bar(df,
             title_opts,
             legend_opts,
             xaxis_opts,
-            yaxis_opts):
+            yaxis_opts,
+            tooltip_opts):
     if stack_view:
         stack = ["1"]*len(ys)
     else:
@@ -131,6 +136,7 @@ def get_bar(df,
     bar.set_global_opts(
         title_opts=opts.TitleOpts(**title_opts),
         legend_opts=opts.LegendOpts(**legend_opts),
+        tooltip_opts=opts.TooltipOpts(**tooltip_opts)
     )
     return bar
 
@@ -258,7 +264,9 @@ def get_line3d(df,
 def get_scatter(df,
                 x,
                 ys,
+                yaxis_names,
                 agg_func,
+                multiple_yaxis,
                 visualmap,
                 init_opts,
                 label_opts,
@@ -273,8 +281,20 @@ def get_scatter(df,
     scatter = Scatter(init_opts=opts.InitOpts(**init_opts))
     scatter.add_xaxis(df[x].values.tolist())
 
-    for y in ys:
-        scatter.add_yaxis(str(y), df[y].values.tolist())
+    if multiple_yaxis:
+        for i, y in enumerate(ys):
+            scatter.add_yaxis(str(y),
+                              df[y].values.tolist(),
+                              yaxis_index=i)
+        for j in range(1, len(ys)):
+            scatter.extend_axis(
+                yaxis=opts.AxisOpts(name=yaxis_names[j],
+                                    offset=30 * (j-1))
+            )
+    else:
+        for y in ys:
+            scatter.add_yaxis(str(y),
+                              df[y].values.tolist())
 
     scatter.set_series_opts(
         label_opts=opts.LabelOpts(**label_opts)

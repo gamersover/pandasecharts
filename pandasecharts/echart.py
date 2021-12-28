@@ -7,7 +7,8 @@ from .core.chart_tool import timeline_decorator, by_decorator
 from .core.data_tool import infer_dtype, _categorize_array
 from .configs.chart_cfg import PieConfig, BarConfig, LineConfig, ScatterConfig
 from .configs.chart_cfg import Bar3DConfig, Line3DConfig, Scatter3DConfig
-from .configs.chart_cfg import BoxplotConfig, FunnelConfig, GeoConfig, MapConfig
+from .configs.chart_cfg import BoxplotConfig, FunnelConfig, GeoConfig
+from .configs.chart_cfg import MapConfig
 
 
 @pd.api.extensions.register_dataframe_accessor("echart")
@@ -16,42 +17,59 @@ class DataFrameEcharts:
         self._obj = pandas_obj
 
     # TODO: datazoom? datazoom_opts?
+    # TODO: 有没有可能by在timeline后面，即先timeiline，后by
     def pie(self,
             x,
             y,
             title="",
             subtitle="",
             agg_func=None,
-            label_show=False,
+            label_show=True,
             figsize=None,
             theme=None,
+            center=None,
+            radius=None,
+            rosetype=None,
             by=None,
             timeline=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            legend_opts={},
-            timeline_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            legend_opts=None,
+            pie_opts=None,
+            timeline_opts=None):
         """pie chart
 
         Args:
         ----
             x (int or str): pandas column name for x axis
             y (int or str): pandas column name for y axis
-            title (str, optional): chart's title to show. Defaults to "".
-            subtitle (str, optional): chart's subtitle to show. Defaults to "".
-            agg_func (str, optional): aggerate function name, e.g. "mean" "sum". Defaults to None.
-                equals to df.groupby(x)[y].agg(agg_func)
-            label_show (bool, optional): show labels for chart. Defaults to False.
-            figsize (tuple, optional): a tuple of chart's (width, height). Defaults to None.
-            theme (str, optional): chart's theme. Defaults to None.
-            by (str, optional): pandas column name for separate groups. Defaults to None.
-            timeline (str, optional): pandas column name for timeline. Defaults to None.
-            init_opts (dict, optional): same as pyecharts init_opts. Default to {}.
-            label_opts (dict, optional): same as pyecharts label_opts. Defaults to {}.
-            title_opts (dict, optional): same as pyecharts title_opts. Defaults to {}.
-            legend_opts (dict, optional): same as pyecharts legend_opts. Defaults to {}.
-            timeline_opts (dict, optional): used like pyecharts timeline.add_schema(**timeline_opts). Defaults to {}.
+            title (str, optional): Defaults to "".
+                chart's title to show.
+            subtitle (str, optional): Defaults to "".
+                chart's subtitle to show.
+            agg_func (str, optional): Defaults to None.
+                aggerate function name, e.g. "mean" "sum".
+                equals to df.groupby(x)[y].agg(agg_func).
+            label_show (bool, optional): Defaults to False.
+                show labels for chart.
+            figsize (tuple, optional): Defaults to None.
+                a tuple of chart's (width, height).
+            theme (str, optional): Defaults to None. chart's theme.
+            by (str, optional): Defaults to None.
+                pandas column name for separate groups.
+            timeline (str, optional): Defaults to None.
+                pandas column name for timeline.
+            init_opts (dict, optional): Default to None.
+                same as pyecharts init_opts.
+            label_opts (dict, optional): Defaults to None.
+                same as pyecharts label_opts.
+            title_opts (dict, optional): Defaults to None.
+                same as pyecharts title_opts.
+            legend_opts (dict, optional): Defaults to None.
+                same as pyecharts legend_opts.
+            timeline_opts (dict, optional): Defaults to None.
+                used like pyecharts timeline.add_schema(**timeline_opts).
 
         Returns:
         ---
@@ -65,6 +83,7 @@ class DataFrameEcharts:
         label_opts = pie_cfg.get_label_opts(label_opts, label_show)
         title_opts = pie_cfg.get_title_opts(title_opts, title, subtitle)
         legend_opts = pie_cfg.get_legend_opts(legend_opts)
+        pie_opts = pie_cfg.get_pie_opts(pie_opts, center, radius, rosetype)
 
         td = timeline_decorator(timeline, timeline_opts, init_opts)
         bd = by_decorator(by=by)
@@ -77,6 +96,7 @@ class DataFrameEcharts:
             label_opts=label_opts,
             title_opts=title_opts,
             legend_opts=legend_opts,
+            pie_opts=pie_opts
         )
 
     def bar(self,
@@ -96,19 +116,21 @@ class DataFrameEcharts:
             theme=None,
             by=None,
             timeline=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            legend_opts={},
-            timeline_opts={},
-            xaxis_opts={},
-            yaxis_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            legend_opts=None,
+            timeline_opts=None,
+            xaxis_opts=None,
+            yaxis_opts=None,
+            tooltip_opts=None):
         """bar chart
 
         Args:
             x (int or str): pandas column name for x axis
             ys (int or str): pandas column name for multiple y axis
-            xaxis_name (str, optional): xais name to show, If None, same as x. Defaults to None.
+            xaxis_name (str, optional): Defaults to None.
+                xais name to show, If None, same as x.
             yaxis_name (str, optional): yaxis name to show. Defaults to "".
             title (str, optional): chart's title to show. Defaults to "".
             subtitle (str, optional): chart's subtitle to show. Defaults to "".
@@ -116,14 +138,14 @@ class DataFrameEcharts:
             agg_func ([type], optional): [description]. Defaults to None.
             stack_view (bool, optional): [description]. Defaults to False.
             label_show (bool, optional): [description]. Defaults to False.
-            label_opts (dict, optional): [description]. Defaults to {}.
+            label_opts (dict, optional): [description]. Defaults to None.
             reverse_axis (bool, optional): [description]. Defaults to False.
-            legend_opts (dict, optional): [description]. Defaults to {}.
+            legend_opts (dict, optional): [description]. Defaults to None.
             figsize ([type], optional): [description]. Defaults to None.
             theme ([type], optional): [description]. Defaults to None.
             by ([type], optional): [description]. Defaults to None.
             timeline ([type], optional): [description]. Defaults to None.
-            timeline_opts (dict, optional): [description]. Defaults to {}.
+            timeline_opts (dict, optional): [description]. Defaults to None.
 
         Returns:
             [type]: [description]
@@ -150,8 +172,10 @@ class DataFrameEcharts:
                                             stack_view or reverse_axis)
         title_opts = bar_cfg.get_title_opts(title_opts, title, subtitle)
         legend_opts = bar_cfg.get_legend_opts(legend_opts)
-        xaxis_opts = bar_cfg.get_xaxis_opts(xaxis_opts, xaxis_name)
+        xaxis_opts = bar_cfg.get_xaxis_opts(xaxis_opts, xaxis_name,
+                                            multiple_yaxis)
         yaxis_opts = bar_cfg.get_yaxis_opts(yaxis_opts, yaxis_names[0])
+        tooltip_opts = bar_cfg.get_tooltip_opts(tooltip_opts, multiple_yaxis)
 
         td = timeline_decorator(timeline, timeline_opts, init_opts)
         bd = by_decorator(by=by)
@@ -170,7 +194,8 @@ class DataFrameEcharts:
             title_opts=title_opts,
             legend_opts=legend_opts,
             xaxis_opts=xaxis_opts,
-            yaxis_opts=yaxis_opts
+            yaxis_opts=yaxis_opts,
+            tooltip_opts=tooltip_opts
         )
 
     def bar3d(self,
@@ -183,15 +208,15 @@ class DataFrameEcharts:
               title="",
               subtitle="",
               visualmap=False,
-              visualmap_opts={},
               figsize=None,
               theme=None,
               by=None,
-              init_opts={},
-              title_opts={},
-              xaxis_opts={},
-              yaxis_opts={},
-              zaxis_opts={}):
+              init_opts=None,
+              title_opts=None,
+              visualmap_opts=None,
+              xaxis_opts=None,
+              yaxis_opts=None,
+              zaxis_opts=None):
         df = self._obj.copy()
 
         if xaxis_name is None:
@@ -240,14 +265,14 @@ class DataFrameEcharts:
              theme=None,
              by=None,
              timeline=None,
-             init_opts={},
-             label_opts={},
-             title_opts={},
-             legend_opts={},
-             xaxis_opts={},
-             yaxis_opts={},
-             tooltip_opts={},
-             timeline_opts={}):
+             init_opts=None,
+             label_opts=None,
+             title_opts=None,
+             legend_opts=None,
+             xaxis_opts=None,
+             yaxis_opts=None,
+             tooltip_opts=None,
+             timeline_opts=None):
         df = self._obj.copy()
         if xaxis_name is None:
             xaxis_name = x
@@ -273,7 +298,7 @@ class DataFrameEcharts:
         legend_opts = line_cfg.get_legend_opts(legend_opts)
         xaxis_opts = line_cfg.get_xaxis_opts(xaxis_opts, xaxis_name, xtype)
         yaxis_opts = line_cfg.get_yaxis_opts(yaxis_opts, yaxis_names[0])
-        tooltip_opts = line_cfg.get_tooltip_opts(tooltip_opts)
+        tooltip_opts = line_cfg.get_tooltip_opts(tooltip_opts, multiple_yaxis)
 
         td = timeline_decorator(timeline, timeline_opts, init_opts)
         bd = by_decorator(by=by)
@@ -310,12 +335,12 @@ class DataFrameEcharts:
                figsize=None,
                theme=None,
                by=None,
-               init_opts={},
-               title_opts={},
-               xaxis_opts={},
-               yaxis_opts={},
-               zaxis_opts={},
-               visualmap_opts={}):
+               init_opts=None,
+               title_opts=None,
+               xaxis_opts=None,
+               yaxis_opts=None,
+               zaxis_opts=None,
+               visualmap_opts=None):
         df = self._obj.copy()
         if xaxis_name is None:
             xaxis_name = str(x)
@@ -329,11 +354,11 @@ class DataFrameEcharts:
             warnings.warn("Please specify argument xtype,"
                           f" \'{xtype}\' is infered!")
         if ytype is None:
-            ytype = infer_dtype(df[x])
+            ytype = infer_dtype(df[y])
             warnings.warn("Please specify argument ytype"
                           f", \'{ytype}\' is infered!")
         if ztype is None:
-            ztype = infer_dtype(df[x])
+            ztype = infer_dtype(df[z])
             warnings.warn(f"Please specify argument ztype,"
                           f" \'{ztype}\' is infered!")
 
@@ -365,29 +390,33 @@ class DataFrameEcharts:
                 ys,
                 xtype=None,
                 xaxis_name=None,
-                yaxis_name="",
+                yaxis_names="",
                 title="",
                 subtitle="",
                 agg_func=None,
+                multiple_yaxis=False,
                 label_show=False,
                 visualmap=False,
                 figsize=None,
                 theme=None,
                 by=None,
                 timeline=None,
-                init_opts={},
-                label_opts={},
-                title_opts={},
-                legend_opts={},
-                xaxis_opts={},
-                yaxis_opts={},
-                timeline_opts={},
-                visualmap_opts={}):
+                init_opts=None,
+                label_opts=None,
+                title_opts=None,
+                legend_opts=None,
+                xaxis_opts=None,
+                yaxis_opts=None,
+                timeline_opts=None,
+                visualmap_opts=None):
         df = self._obj.copy()
         df[x] = df[x].astype(str)
 
         if xaxis_name is None:
             xaxis_name = x
+
+        if not isinstance(yaxis_names, list):
+            yaxis_names = [yaxis_names]*len(ys)
 
         if not isinstance(ys, list):
             ys = [ys]
@@ -403,7 +432,7 @@ class DataFrameEcharts:
         title_opts = scatter_cfg.get_title_opts(title_opts, title, subtitle)
         legend_opts = scatter_cfg.get_legend_opts(legend_opts)
         xaxis_opts = scatter_cfg.get_xaxis_opts(xaxis_opts, xaxis_name, xtype)
-        yaxis_opts = scatter_cfg.get_yaxis_opts(yaxis_opts, yaxis_name)
+        yaxis_opts = scatter_cfg.get_yaxis_opts(yaxis_opts, yaxis_names[0])
         visualmap_opts = scatter_cfg.get_visualmap_opts(visualmap_opts)
 
         td = timeline_decorator(timeline, timeline_opts, init_opts)
@@ -412,7 +441,9 @@ class DataFrameEcharts:
             df=df,
             x=x,
             ys=ys,
+            yaxis_names=yaxis_names,
             agg_func=agg_func,
+            multiple_yaxis=multiple_yaxis,
             visualmap=visualmap,
             init_opts=init_opts,
             label_opts=label_opts,
@@ -439,12 +470,12 @@ class DataFrameEcharts:
                   figsize=None,
                   theme=None,
                   by=None,
-                  init_opts={},
-                  title_opts={},
-                  xaxis_opts={},
-                  yaxis_opts={},
-                  zaxis_opts={},
-                  visualmap_opts={}):
+                  init_opts=None,
+                  title_opts=None,
+                  xaxis_opts=None,
+                  yaxis_opts=None,
+                  zaxis_opts=None,
+                  visualmap_opts=None):
         df = self._obj.copy()
         if xaxis_name is None:
             xaxis_name = str(x)
@@ -458,11 +489,11 @@ class DataFrameEcharts:
             warnings.warn("Please specify argument xtype,"
                           f" \'{xtype}\' is infered!")
         if ytype is None:
-            ytype = infer_dtype(df[x])
+            ytype = infer_dtype(df[y])
             warnings.warn("Please specify argument ytype,"
                           f" \'{ytype}\' is infered!")
         if ztype is None:
-            ztype = infer_dtype(df[x])
+            ztype = infer_dtype(df[z])
             warnings.warn(f"Please specify argument ztype,"
                           f" \'{ztype}\' is infered!")
 
@@ -505,12 +536,12 @@ class DataFrameEcharts:
                 theme=None,
                 by=None,
                 timeline=None,
-                init_opts={},
-                title_opts={},
-                legend_opts={},
-                xaxis_opts={},
-                yaxis_opts={},
-                timeline_opts={}):
+                init_opts=None,
+                title_opts=None,
+                legend_opts=None,
+                xaxis_opts=None,
+                yaxis_opts=None,
+                timeline_opts=None):
         df = self._obj.copy()
 
         if not isinstance(ys, list):
@@ -547,17 +578,18 @@ class DataFrameEcharts:
                theme=None,
                by=None,
                timeline=None,
-               init_opts={},
-               label_opts={},
-               title_opts={},
-               legend_opts={},
-               timeline_opts={}):
+               init_opts=None,
+               label_opts=None,
+               title_opts=None,
+               legend_opts=None,
+               timeline_opts=None):
         df = self._obj.copy()
         funnel_cfg = FunnelConfig()
         init_opts = funnel_cfg.get_init_opts(init_opts, theme, figsize)
         title_opts = funnel_cfg.get_title_opts(title_opts, title, subtitle)
         label_opts = funnel_cfg.get_label_opts(label_opts, label_show,
                                                position)
+        legend_opts = funnel_cfg.get_legend_opts(legend_opts)
         td = timeline_decorator(timeline, timeline_opts, init_opts)
         bd = by_decorator(by=by)
         return td(bd(get_funnel))(
@@ -584,11 +616,11 @@ class DataFrameEcharts:
             theme=None,
             by=None,
             timeline=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            visualmap_opts={},
-            timeline_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            visualmap_opts=None,
+            timeline_opts=None):
         df = self._obj.copy()
         if not isinstance(ys, list):
             ys = [ys]
@@ -623,15 +655,15 @@ class DataFrameEcharts:
             agg_func=None,
             label_show=False,
             visualmap=False,
-            visualmap_opts={},
             figsize=None,
             theme=None,
             by=None,
             timeline=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            timeline_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            visualmap_opts=None,
+            timeline_opts=None):
         df = self._obj.copy()
 
         map_cfg = MapConfig()
@@ -683,10 +715,10 @@ class SeriesEcharts:
             label_show=True,
             figsize=None,
             theme=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            legend_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            legend_opts=None):
         # TODO: 是否加个fillna=None，如果是None表示dropna，如果是int则填充，如果是字符串则用方法填充？
         pie_cfg = PieConfig()
         init_opts = pie_cfg.get_init_opts(init_opts, theme, figsize)
@@ -718,12 +750,12 @@ class SeriesEcharts:
             label_show=False,
             figsize=None,
             theme=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            legend_opts={},
-            xaxis_opts={},
-            yaxis_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            legend_opts=None,
+            xaxis_opts=None,
+            yaxis_opts=None):
         df, xcol, ycol, xtype = self._get_dist(xtype, bins)
         if xaxis_name is None:
             xaxis_name = str(xcol)
@@ -768,13 +800,13 @@ class SeriesEcharts:
              label_show=False,
              figsize=None,
              theme=None,
-             init_opts={},
-             label_opts={},
-             title_opts={},
-             legend_opts={},
-             xaxis_opts={},
-             yaxis_opts={},
-             tooltip_opts={}):
+             init_opts=None,
+             label_opts=None,
+             title_opts=None,
+             legend_opts=None,
+             xaxis_opts=None,
+             yaxis_opts=None,
+             tooltip_opts=None):
         df, xcol, ycol, xtype = self._get_dist(xtype, bins)
         if xaxis_name is None:
             xaxis_name = str(xcol)
@@ -812,12 +844,11 @@ class SeriesEcharts:
                 subtitle="",
                 figsize=None,
                 theme=None,
-                init_opts={},
-                title_opts={},
-                label_opts={},
-                legend_opts={},
-                xaxis_opts={},
-                yaxis_opts={}):
+                init_opts=None,
+                title_opts=None,
+                legend_opts=None,
+                xaxis_opts=None,
+                yaxis_opts=None):
         df = self._obj.to_frame()
         xcol = df.columns[0]
         if xaxis_name is None:
@@ -845,10 +876,10 @@ class SeriesEcharts:
             visualmap=False,
             figsize=None,
             theme=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            visualmap_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            visualmap_opts=None):
         df, xcol, ycol, xtype = self._get_dist('category', None)
         geo_cfg = GeoConfig()
         init_opts = geo_cfg.get_init_opts(init_opts, theme, figsize)
@@ -876,10 +907,10 @@ class SeriesEcharts:
             visualmap=False,
             figsize=None,
             theme=None,
-            init_opts={},
-            label_opts={},
-            title_opts={},
-            visualmap_opts={}):
+            init_opts=None,
+            label_opts=None,
+            title_opts=None,
+            visualmap_opts=None):
         df, xcol, ycol, xtype = self._get_dist('category', None)
 
         map_cfg = MapConfig()
