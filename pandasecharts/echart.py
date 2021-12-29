@@ -715,12 +715,17 @@ class SeriesEcharts:
             label_show=True,
             figsize=None,
             theme=None,
+            center=None,
+            radius=None,
+            rosetype=None,
+            pie_opts=None,
             init_opts=None,
             label_opts=None,
             title_opts=None,
             legend_opts=None):
         # TODO: 是否加个fillna=None，如果是None表示dropna，如果是int则填充，如果是字符串则用方法填充？
         pie_cfg = PieConfig()
+        pie_opts = pie_cfg.get_pie_opts(pie_opts, center, radius, rosetype)
         init_opts = pie_cfg.get_init_opts(init_opts, theme, figsize)
         label_opts = pie_cfg.get_label_opts(label_opts, label_show)
         title_opts = pie_cfg.get_title_opts(title_opts, title, subtitle)
@@ -735,7 +740,8 @@ class SeriesEcharts:
             init_opts=init_opts,
             label_opts=label_opts,
             title_opts=title_opts,
-            legend_opts=legend_opts
+            legend_opts=legend_opts,
+            pie_opts=pie_opts,
         )
 
     def bar(self,
@@ -755,7 +761,8 @@ class SeriesEcharts:
             title_opts=None,
             legend_opts=None,
             xaxis_opts=None,
-            yaxis_opts=None):
+            yaxis_opts=None,
+            tooltip_opts=None):
         df, xcol, ycol, xtype = self._get_dist(xtype, bins)
         if xaxis_name is None:
             xaxis_name = str(xcol)
@@ -768,8 +775,9 @@ class SeriesEcharts:
                                             position=reverse_axis)
         title_opts = bar_cfg.get_title_opts(title_opts, title, subtitle)
         legend_opts = bar_cfg.get_legend_opts(legend_opts)
-        xaxis_opts = bar_cfg.get_xaxis_opts(xaxis_opts, xaxis_name)
+        xaxis_opts = bar_cfg.get_xaxis_opts(xaxis_opts, xaxis_name, False)
         yaxis_opts = bar_cfg.get_yaxis_opts(yaxis_opts, yaxis_name)
+        tooltip_opts = bar_cfg.get_tooltip_opts(tooltip_opts, False)
 
         return get_bar(
             df,
@@ -786,7 +794,8 @@ class SeriesEcharts:
             title_opts=title_opts,
             legend_opts=legend_opts,
             xaxis_opts=xaxis_opts,
-            yaxis_opts=yaxis_opts
+            yaxis_opts=yaxis_opts,
+            tooltip_opts=tooltip_opts,
         )
 
     def line(self,
@@ -818,7 +827,7 @@ class SeriesEcharts:
         legend_opts = line_cfg.get_legend_opts(legend_opts)
         xaxis_opts = line_cfg.get_xaxis_opts(xaxis_opts, xaxis_name, xtype)
         yaxis_opts = line_cfg.get_yaxis_opts(yaxis_opts, yaxis_name)
-        tooltip_opts = line_cfg.get_tooltip_opts(tooltip_opts)
+        tooltip_opts = line_cfg.get_tooltip_opts(tooltip_opts, False)
 
         return get_line(
             df,
