@@ -62,8 +62,8 @@ $ python setup.py install
 * [x] Geo
 * [x] Map
 * [x] Funnel
-* [x] 支持更多自定义样式
-* [x] 完善说明和使用文档
+* [x] Calendar
+* [x] WordCloud 
 
 
 
