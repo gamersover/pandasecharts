@@ -36,3 +36,8 @@ def _categorize_array(a, bins=None):
         zip(range(1, bins+1), zip(bin_edges[:-1], bin_edges[1:])))
     region_a = [cat2region[min(c, bins)][0] for c in cat_a]
     return region_a
+
+
+def to_datetime(a: pd.Series, format):
+    a = pd.to_datetime(a, format=format).astype(str)
+    return a

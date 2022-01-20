@@ -4,6 +4,7 @@ from pyecharts.charts import Page, Timeline
 from pyecharts.charts import Line, Bar, Pie, Scatter
 from pyecharts.charts import Line3D, Bar3D, Scatter3D
 from pyecharts.charts import Boxplot, Funnel, Geo, Map
+from pyecharts.charts import Calendar, WordCloud
 from pyecharts import options as opts
 
 
@@ -471,3 +472,54 @@ def get_map(df,
             title_opts=opts.TitleOpts(**title_opts),
         )
     return map
+
+
+def get_calender(df,
+                 x,
+                 y,
+                 agg_func,
+                 visualmap,
+                 init_opts,
+                 title_opts,
+                 visualmap_opts,
+                 calendar_opts):
+    if agg_func is not None:
+        df = df.groupby(x)[y].agg(agg_func).reset_index()
+
+    calendar = (
+        Calendar(init_opts=opts.InitOpts(**init_opts))
+        .add(str(y), df[[x, y]].values.tolist(),
+             calendar_opts=opts.CalendarOpts(**calendar_opts))
+    )
+
+    if visualmap:
+        calendar.set_global_opts(
+            title_opts=opts.TitleOpts(**title_opts),
+            visualmap_opts=opts.VisualMapOpts(**visualmap_opts),
+        )
+    else:
+        calendar.set_global_opts(
+            title_opts=opts.TitleOpts(**title_opts),
+        )
+    return calendar
+
+
+def get_wordcloud(df,
+                  x,
+                  y,
+                  agg_func,
+                  init_opts,
+                  title_opts,
+                  tooltip_opts):
+    if agg_func is not None:
+        df = df.groupby(x)[y].agg(agg_func).reset_index()
+
+    wordcloud = (
+        WordCloud(init_opts=opts.InitOpts(**init_opts))
+        .add(str(y), df[[x, y]].values.tolist())
+        .set_global_opts(
+            title_opts=opts.TitleOpts(**title_opts),
+            tooltip_opts=opts.TooltipOpts(**tooltip_opts)
+        )
+    )
+    return wordcloud

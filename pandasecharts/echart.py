@@ -3,12 +3,13 @@ import pandas as pd
 from .core.chart_tool import get_pie, get_bar, get_line, get_scatter
 from .core.chart_tool import get_bar3d, get_line3d, get_scatter3d
 from .core.chart_tool import get_boxplot, get_funnel, get_geo, get_map
+from .core.chart_tool import get_calender, get_wordcloud
 from .core.chart_tool import timeline_decorator, by_decorator
-from .core.data_tool import infer_dtype, _categorize_array
+from .core.data_tool import infer_dtype, _categorize_array, to_datetime
 from .configs.chart_cfg import PieConfig, BarConfig, LineConfig, ScatterConfig
 from .configs.chart_cfg import Bar3DConfig, Line3DConfig, Scatter3DConfig
 from .configs.chart_cfg import BoxplotConfig, FunnelConfig, GeoConfig
-from .configs.chart_cfg import MapConfig
+from .configs.chart_cfg import MapConfig, CalendarConfig, WordCloudConfig
 
 
 @pd.api.extensions.register_dataframe_accessor("echart")
@@ -232,7 +233,9 @@ class DataFrameEcharts:
         xaxis_opts = bar3d_cfg.get_xaxis_opts(xaxis_opts, xaxis_name)
         yaxis_opts = bar3d_cfg.get_yaxis_opts(yaxis_opts, yaxis_name)
         zaxis_opts = bar3d_cfg.get_zaxis_opts(zaxis_opts, zaxis_name)
-        visualmap_opts = bar3d_cfg.get_visualmap_opts(visualmap_opts)
+        visualmap_opts = bar3d_cfg.get_visualmap_opts(visualmap_opts,
+                                                      df[z].min().item(),
+                                                      df[z].max().item())
 
         bd = by_decorator(by=by)
         return bd(get_bar3d)(
@@ -368,7 +371,9 @@ class DataFrameEcharts:
         xaxis_opts = line3d_cfg.get_xaxis_opts(xaxis_opts, xaxis_name, xtype)
         yaxis_opts = line3d_cfg.get_yaxis_opts(yaxis_opts, yaxis_name, ytype)
         zaxis_opts = line3d_cfg.get_zaxis_opts(zaxis_opts, zaxis_name, ztype)
-        visualmap_opts = line3d_cfg.get_visualmap_opts(visualmap_opts)
+        visualmap_opts = line3d_cfg.get_visualmap_opts(visualmap_opts,
+                                                       df[z].min().item(),
+                                                       df[z].max().item())
 
         bd = by_decorator(by=by)
         return bd(get_line3d)(
@@ -433,7 +438,10 @@ class DataFrameEcharts:
         legend_opts = scatter_cfg.get_legend_opts(legend_opts)
         xaxis_opts = scatter_cfg.get_xaxis_opts(xaxis_opts, xaxis_name, xtype)
         yaxis_opts = scatter_cfg.get_yaxis_opts(yaxis_opts, yaxis_names[0])
-        visualmap_opts = scatter_cfg.get_visualmap_opts(visualmap_opts)
+        visualmap_opts = scatter_cfg.get_visualmap_opts(
+                                                    visualmap_opts,
+                                                    df[ys].values.min().item(),
+                                                    df[ys].values.max().item())
 
         td = timeline_decorator(timeline, timeline_opts, init_opts)
         bd = by_decorator(by=by)
@@ -509,7 +517,9 @@ class DataFrameEcharts:
         zaxis_opts = scatter3d_cfg.get_zaxis_opts(zaxis_opts,
                                                   zaxis_name,
                                                   ztype)
-        visualmap_opts = scatter3d_cfg.get_visualmap_opts(visualmap_opts)
+        visualmap_opts = scatter3d_cfg.get_visualmap_opts(visualmap_opts,
+                                                          df[z].min().item(),
+                                                          df[z].max().item())
 
         bd = by_decorator(by=by)
         return bd(get_scatter3d)(
@@ -629,7 +639,9 @@ class DataFrameEcharts:
         init_opts = geo_cfg.get_init_opts(init_opts, theme, figsize)
         label_opts = geo_cfg.get_label_opts(label_opts, label_show)
         title_opts = geo_cfg.get_title_opts(title_opts, title, subtitle)
-        visualmap_opts = geo_cfg.get_visualmap_opts(visualmap_opts)
+        visualmap_opts = geo_cfg.get_visualmap_opts(visualmap_opts,
+                                                    df[ys].values.min().item(),
+                                                    df[ys].values.max().item())
 
         td = timeline_decorator(timeline, timeline_opts, init_opts)
         bd = by_decorator(by=by)
@@ -670,7 +682,9 @@ class DataFrameEcharts:
         init_opts = map_cfg.get_init_opts(init_opts, theme, figsize)
         label_opts = map_cfg.get_label_opts(label_opts, label_show)
         title_opts = map_cfg.get_title_opts(title_opts, title, subtitle)
-        visualmap_opts = map_cfg.get_visualmap_opts(visualmap_opts)
+        visualmap_opts = map_cfg.get_visualmap_opts(visualmap_opts,
+                                                    df[y].min().item(),
+                                                    df[y].max().item())
 
         td = timeline_decorator(timeline, timeline_opts, init_opts)
         bd = by_decorator(by=by)
@@ -685,6 +699,84 @@ class DataFrameEcharts:
             label_opts=label_opts,
             title_opts=title_opts,
             visualmap_opts=visualmap_opts,
+        )
+
+    def calendar(self,
+                 x,
+                 y,
+                 x_format=None,
+                 title="",
+                 subtitle="",
+                 agg_func=None,
+                 visualmap=True,
+                 figsize=None,
+                 theme=None,
+                 by=None,
+                 timeline=None,
+                 init_opts=None,
+                 title_opts=None,
+                 visualmap_opts=None,
+                 calendar_opts=None,
+                 timeline_opts=None):
+        df = self._obj.copy()
+
+        df[x] = to_datetime(df[x], format=x_format)
+        min_date, max_date = df[x].min(), df[x].max()
+        calendar_cfg = CalendarConfig()
+        init_opts = calendar_cfg.get_init_opts(init_opts, theme, figsize)
+        title_opts = calendar_cfg.get_title_opts(title_opts, title, subtitle)
+        visualmap_opts = calendar_cfg.get_visualmap_opts(visualmap_opts,
+                                                         df[y].min().item(),
+                                                         df[y].max().item())
+        calendar_opts = calendar_cfg.get_calendar_opts(calendar_opts,
+                                                       min_date,
+                                                       max_date)
+
+        td = timeline_decorator(timeline, timeline_opts, init_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_calender))(
+            df=df,
+            x=x,
+            y=y,
+            agg_func=agg_func,
+            visualmap=visualmap,
+            init_opts=init_opts,
+            title_opts=title_opts,
+            visualmap_opts=visualmap_opts,
+            calendar_opts=calendar_opts,
+        )
+
+    def wordcloud(self,
+                  x,
+                  y,
+                  title="",
+                  subtitle="",
+                  agg_func=None,
+                  figsize=None,
+                  theme=None,
+                  by=None,
+                  timeline=None,
+                  init_opts=None,
+                  title_opts=None,
+                  tooltip_opts=None,
+                  timeline_opts=None):
+        df = self._obj.copy()
+
+        wordcloud_cfg = WordCloudConfig()
+        init_opts = wordcloud_cfg.get_init_opts(init_opts, theme, figsize)
+        title_opts = wordcloud_cfg.get_title_opts(title_opts, title, subtitle)
+        tooltip_opts = wordcloud_cfg.get_tooltip_opts(tooltip_opts)
+
+        td = timeline_decorator(timeline, timeline_opts, init_opts)
+        bd = by_decorator(by=by)
+        return td(bd(get_wordcloud))(
+            df=df,
+            x=x,
+            y=y,
+            agg_func=agg_func,
+            init_opts=init_opts,
+            title_opts=title_opts,
+            tooltip_opts=tooltip_opts,
         )
 
 
@@ -894,6 +986,9 @@ class SeriesEcharts:
         init_opts = geo_cfg.get_init_opts(init_opts, theme, figsize)
         label_opts = geo_cfg.get_label_opts(label_opts, label_show)
         title_opts = geo_cfg.get_title_opts(title_opts, title, subtitle)
+        visualmap_opts = geo_cfg.get_visualmap_opts(visualmap,
+                                                    df[ycol].min().item(),
+                                                    df[ycol].max().item())
 
         return get_geo(
             df,
@@ -926,6 +1021,9 @@ class SeriesEcharts:
         init_opts = map_cfg.get_init_opts(init_opts, theme, figsize)
         label_opts = map_cfg.get_label_opts(label_opts, label_show)
         title_opts = map_cfg.get_title_opts(title_opts, title, subtitle)
+        visualmap_opts = map_cfg.get_visualmap_opts(visualmap_opts,
+                                                    df[ycol].min().item(),
+                                                    df[ycol].max().item())
         return get_map(
             df,
             xcol,

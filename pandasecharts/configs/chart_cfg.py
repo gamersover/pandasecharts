@@ -55,10 +55,20 @@ class ChartConfig:
         axis_opts_.update(axis_opts)
         return axis_opts_
 
-    def get_visualmap_opts(self, visualmap_opts):
+    def get_visualmap_opts(self, visualmap_opts, min_, max_):
         if visualmap_opts is None:
             visualmap_opts = {}
-        return visualmap_opts
+        visualmap_opts_ = {
+            "min_": min_,
+            "max_": max_,
+        }
+        visualmap_opts_.update(visualmap_opts)
+        return visualmap_opts_
+
+    def get_tooltip_opts(self, tooltip_tops):
+        if tooltip_tops is None:
+            tooltip_tops = {}
+        return tooltip_tops
 
 
 class PieConfig(ChartConfig):
@@ -110,7 +120,7 @@ class BarConfig(ChartConfig):
                 "axis_pointer_type": "cross"
             }
         tooltip_opts_.update(tooltip_opts)
-        return tooltip_opts_
+        return super().get_tooltip_opts(tooltip_opts_)
 
 
 class Bar3DConfig(ChartConfig):
@@ -141,7 +151,7 @@ class LineConfig(ChartConfig):
                 "axis_pointer_type": "cross"
             }
         tooltip_opts_.update(tooltip_opts)
-        return tooltip_opts_
+        return super().get_tooltip_opts(tooltip_opts_)
 
 
 class Line3DConfig(ChartConfig):
@@ -191,4 +201,30 @@ class GeoConfig(ChartConfig):
 
 
 class MapConfig(ChartConfig):
+    pass
+
+
+class CalendarConfig(ChartConfig):
+    def get_visualmap_opts(self, visualmap_opts, min_, max_):
+        if visualmap_opts is None:
+            visualmap_opts = {}
+        visualmap_opts_ = {
+            "orient": "horizontal",
+            "is_piecewise": True,
+        }
+        visualmap_opts_.update(visualmap_opts)
+        return super().get_visualmap_opts(visualmap_opts_, min_, max_)
+
+    def get_calendar_opts(self, calendar_opts, min_date, max_date):
+        if calendar_opts is None:
+            calendar_opts = {}
+
+        calendar_opts_ = {
+            "range_": [min_date, max_date]
+        }
+        calendar_opts_.update(calendar_opts)
+        return calendar_opts_
+
+
+class WordCloudConfig(ChartConfig):
     pass
