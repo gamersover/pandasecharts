@@ -2,3 +2,5 @@
 .ipynb_checkpoints/
 dist/
 pandasecharts.egg-info/
+.DS_store
+*.ipynb

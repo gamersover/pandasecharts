@@ -151,6 +151,7 @@ class DataFrameEcharts:
         Returns:
             [type]: [description]
         """
+        # TODO: multiple_yaxis改成yaxis_indexs，这样区分设置更好，而且后面还可以使用overlap组合不同图表
         df = self._obj.copy()
         # 由于dataframe的bar的x轴可以只考虑离散值，所以先按照
         # x排序，然后将x转为字符串类型，注意要在转str前排序，要不然

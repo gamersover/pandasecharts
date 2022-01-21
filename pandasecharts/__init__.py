@@ -1,3 +1,5 @@
 from .configs.basic_cfg import options, set_options, get_options
+from .version import __version__
 
-__version__ = "0.4.2"
+
+__all__ = ["options", "set_options", "get_options", "__version__"]
