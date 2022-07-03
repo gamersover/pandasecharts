@@ -65,10 +65,26 @@ class ChartConfig:
         visualmap_opts_.update(visualmap_opts)
         return visualmap_opts_
 
-    def get_tooltip_opts(self, tooltip_tops):
-        if tooltip_tops is None:
-            tooltip_tops = {}
-        return tooltip_tops
+    def get_tooltip_opts(self, tooltip_opts):
+        if tooltip_opts is None:
+            tooltip_opts = {}
+        return tooltip_opts
+
+    def get_datazoom_opts(self, datazoom_opts, is_show, datazoom_type):
+        if datazoom_opts is None:
+            datazoom_opts = {}
+        if isinstance(datazoom_opts, dict):
+            datazoom_opts = [datazoom_opts]
+
+        datazoom_opts_ = []
+        for dz_opts in datazoom_opts:
+            opts_ = {
+                "is_show": is_show,
+                "type_": datazoom_type,
+            }
+            opts_.update(dz_opts)
+            datazoom_opts_.append(opts_)
+        return datazoom_opts_
 
 
 class PieConfig(ChartConfig):

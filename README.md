@@ -36,11 +36,11 @@ $ python setup.py install
 #### notebook环境
 
 * 基本直方图
-  
+
 ![img](https://cdn.jsdelivr.net/gh/gamersover/hexo_blog_assets@main/pandasecharts示例/Kapture-2021-12-02-at-19.51.26.6hc6dq7atk40.gif)
 
 * 带时间变化的直方图
-  
+
 ![img](https://cdn.jsdelivr.net/gh/gamersover/hexo_blog_assets@main/pandasecharts示例/Kapture-2021-12-02-at-19.56.33.28ztwkmukni8.gif)
 
 更多使用方法请访问
@@ -55,7 +55,7 @@ $ python setup.py install
 * [x] Bar
 * [x] Bar3D
 * [x] Line
-* [x] Line3D 
+* [x] Line3D
 * [x] Scatter
 * [x] Scatter3D
 * [x] Boxplot
@@ -63,7 +63,12 @@ $ python setup.py install
 * [x] Map
 * [x] Funnel
 * [x] Calendar
-* [x] WordCloud 
+* [x] WordCloud
+
+### 0.5版本计划
+* [x] 支持代码提示
+* [x] 加入datazoom
+* [x] 修复line图形当xtype为value时需要排序的问题
 
 
 

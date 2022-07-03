@@ -90,7 +90,8 @@ def get_bar(df,
             legend_opts,
             xaxis_opts,
             yaxis_opts,
-            tooltip_opts):
+            tooltip_opts,
+            datazoom_opts):
     if stack_view:
         stack = ["1"]*len(ys)
     else:
@@ -100,7 +101,7 @@ def get_bar(df,
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
     if sort is not None:
-        # 排序显示的顺序和是否反转坐标轴有关
+        # 排序显示的顺序和是否反转坐标轴有关?
         df = df.sort_values(by=sort, ascending=reverse_axis)
 
     bar = Bar(init_opts=opts.InitOpts(**init_opts))
@@ -134,11 +135,18 @@ def get_bar(df,
             xaxis_opts=opts.AxisOpts(**xaxis_opts),
             yaxis_opts=opts.AxisOpts(**yaxis_opts)
         )
+
     bar.set_global_opts(
         title_opts=opts.TitleOpts(**title_opts),
         legend_opts=opts.LegendOpts(**legend_opts),
-        tooltip_opts=opts.TooltipOpts(**tooltip_opts)
+        tooltip_opts=opts.TooltipOpts(**tooltip_opts),
     )
+
+    if datazoom_opts[0]["is_show"]:
+        bar.set_global_opts(
+            datazoom_opts=[
+                opts.DataZoomOpts(**opts_) for opts_ in datazoom_opts]
+        )
     return bar
 
 
@@ -189,7 +197,8 @@ def get_line(df,
              legend_opts,
              xaxis_opts,
              yaxis_opts,
-             tooltip_opts):
+             tooltip_opts,
+             datazoom_opts):
     # TODO: line的itemType
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
@@ -224,7 +233,14 @@ def get_line(df,
         title_opts=opts.TitleOpts(**title_opts),
         legend_opts=opts.LegendOpts(**legend_opts),
         tooltip_opts=opts.TooltipOpts(**tooltip_opts),
+
     )
+
+    if datazoom_opts[0]["is_show"]:
+        line.set_global_opts(
+            datazoom_opts=[
+                opts.DataZoomOpts(**opts_) for opts_ in datazoom_opts]
+        )
     return line
 
 
@@ -275,7 +291,8 @@ def get_scatter(df,
                 legend_opts,
                 xaxis_opts,
                 yaxis_opts,
-                visualmap_opts):
+                visualmap_opts,
+                datazoom_opts):
     if agg_func is not None:
         df = df.groupby(x)[ys].agg(agg_func).reset_index()
 
@@ -301,20 +318,27 @@ def get_scatter(df,
         label_opts=opts.LabelOpts(**label_opts)
     )
 
+    # TODO: visualmap必须一起设置才生效，单独设置不生效？
     if visualmap:
         scatter.set_global_opts(
             xaxis_opts=opts.AxisOpts(**xaxis_opts),
             yaxis_opts=opts.AxisOpts(**yaxis_opts),
             title_opts=opts.TitleOpts(**title_opts),
             legend_opts=opts.LegendOpts(**legend_opts),
-            visualmap_opts=opts.VisualMapOpts(**visualmap_opts)
+            visualmap_opts=opts.VisualMapOpts(**visualmap_opts),
         )
     else:
         scatter.set_global_opts(
             xaxis_opts=opts.AxisOpts(**xaxis_opts),
             yaxis_opts=opts.AxisOpts(**yaxis_opts),
             legend_opts=opts.LegendOpts(**legend_opts),
-            title_opts=opts.TitleOpts(**title_opts)
+            title_opts=opts.TitleOpts(**title_opts),
+        )
+
+    if datazoom_opts[0]["is_show"]:
+        scatter.set_global_opts(
+            datazoom_opts=[
+                opts.DataZoomOpts(**opts_) for opts_ in datazoom_opts]
         )
     return scatter
 
@@ -360,7 +384,8 @@ def get_boxplot(df,
                 title_opts,
                 legend_opts,
                 xaxis_opts,
-                yaxis_opts):
+                yaxis_opts,
+                datazoom_opts):
     boxplot = Boxplot(init_opts=opts.InitOpts(**init_opts))
 
     if all(isinstance(y, str) for y in ys):
@@ -379,8 +404,14 @@ def get_boxplot(df,
         xaxis_opts=opts.AxisOpts(**xaxis_opts),
         yaxis_opts=opts.AxisOpts(**yaxis_opts),
         title_opts=opts.TitleOpts(**title_opts),
-        legend_opts=opts.LegendOpts(**legend_opts)
+        legend_opts=opts.LegendOpts(**legend_opts),
     )
+
+    if datazoom_opts[0]["is_show"]:
+        boxplot.set_global_opts(
+            datazoom_opts=[
+                opts.DataZoomOpts(**opts_) for opts_ in datazoom_opts]
+        )
     return boxplot
 
 
