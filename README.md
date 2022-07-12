@@ -12,10 +12,10 @@
 
 [English README](README_en.md)
 
-## 简介
+## 🔍简介
 基于[pandas](https://github.com/pandas-dev/pandas)和[pyecharts](https://github.com/pyecharts/pyecharts)的可视化工具，该项目的旨在**用一行代码可视化您的pandas数据**。
 
-## 安装
+## 🛠安装
 pip 安装
 
 ```sh
@@ -31,7 +31,7 @@ $ pip install -r requirements.txt
 $ python setup.py install
 ```
 
-## 使用
+## 🚀使用
 
 #### notebook环境
 
@@ -47,7 +47,7 @@ $ python setup.py install
 * [documentation](https://caoqinping.com/2021/12/17/pandasecharts使用示例/)
 * [example](examples/)
 
-## 后续计划
+## 🌏后续计划
 
 目前已支持图表类型
 
@@ -72,6 +72,6 @@ $ python setup.py install
 
 
 
-## License
+## ©License
 
 MIT [©gamersover](https://github.com/gamersover)
